@@ -510,7 +510,6 @@ export default function DesaparecidosSection() {
             )}
           </>
         )}
-        {zonaActiva !== "Todas" && !busqueda && <TwitterZona zona={zonaActiva as ZonaDB} />}
       </div>
 
       {/* Modal formulario */}
