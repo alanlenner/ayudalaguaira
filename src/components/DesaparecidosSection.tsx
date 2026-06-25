@@ -93,7 +93,7 @@ function TarjetaReporte({ pub, onSelect }: { pub: Reporte; onSelect: (r: Reporte
       className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all"
     >
       {pub.foto_url ? (
-        <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full h-36 object-cover" loading="lazy" />
+        <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full object-contain bg-slate-100" loading="lazy" />
       ) : (
         <div className="w-full h-28 bg-marca-fondo flex items-center justify-center">
           <User className="w-10 h-10 text-slate-300" />
