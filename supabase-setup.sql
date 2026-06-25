@@ -63,3 +63,68 @@ CREATE POLICY "Actualización pública" ON desaparecidos
 -- STORAGE: Bucket "fotos-desaparecidos"
 -- Ya debería estar creado como público.
 -- ============================================
+
+-- ============================================
+-- TABLA: colaboradores
+-- ============================================
+CREATE TABLE IF NOT EXISTS colaboradores (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  tipo_ayuda TEXT[] NOT NULL,
+  ubicacion TEXT NOT NULL,
+  disponibilidad TEXT,
+  contacto TEXT NOT NULL,
+  descripcion TEXT,
+  edit_token TEXT UNIQUE NOT NULL,
+  activo BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_colaboradores_activo ON colaboradores(activo);
+CREATE INDEX idx_colaboradores_fecha ON colaboradores(created_at DESC);
+CREATE INDEX idx_colaboradores_edit_token ON colaboradores(edit_token);
+
+ALTER TABLE colaboradores ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lectura pública colaboradores" ON colaboradores
+  FOR SELECT USING (true);
+
+CREATE POLICY "Inserción pública colaboradores" ON colaboradores
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Actualización pública colaboradores" ON colaboradores
+  FOR UPDATE USING (true);
+
+-- ============================================
+-- TABLA: recursos
+-- ============================================
+CREATE TABLE IF NOT EXISTS recursos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  tipo_publicacion TEXT NOT NULL CHECK (tipo_publicacion IN ('necesito', 'ofrezco')),
+  categoria TEXT NOT NULL CHECK (categoria IN ('alimentos', 'agua', 'insumos_medicos', 'medicamentos', 'ropa_abrigo', 'refugio_temporal', 'otro')),
+  descripcion TEXT NOT NULL,
+  direccion TEXT NOT NULL,
+  zona TEXT NOT NULL CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía')),
+  celular_contacto TEXT NOT NULL,
+  estado TEXT NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'resuelto')),
+  edit_token TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_recursos_tipo ON recursos(tipo_publicacion);
+CREATE INDEX idx_recursos_zona ON recursos(zona);
+CREATE INDEX idx_recursos_categoria ON recursos(categoria);
+CREATE INDEX idx_recursos_estado ON recursos(estado);
+CREATE INDEX idx_recursos_fecha ON recursos(created_at DESC);
+CREATE INDEX idx_recursos_edit_token ON recursos(edit_token);
+
+ALTER TABLE recursos ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lectura pública recursos" ON recursos
+  FOR SELECT USING (true);
+
+CREATE POLICY "Inserción pública recursos" ON recursos
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Actualización pública recursos" ON recursos
+  FOR UPDATE USING (true);
