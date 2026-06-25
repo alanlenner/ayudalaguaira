@@ -299,6 +299,7 @@ export default function DesaparecidosSection() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [duplicados, setDuplicados] = useState<Duplicado[]>([]);
   const dupTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [contadores, setContadores] = useState({ buscando: 0, encontrado_vivo: 0, encontrado_fallecido: 0, hospitalizado: 0 });
 
   const cargarReportes = useCallback(
     async (reset = true) => {
@@ -328,6 +329,19 @@ export default function DesaparecidosSection() {
   );
 
   useEffect(() => { cargarReportes(true); }, [cargarReportes]);
+
+  useEffect(() => {
+    const fetchContadores = async () => {
+      const estados = ["buscando", "encontrado_vivo", "encontrado_fallecido", "hospitalizado"] as const;
+      const counts = { buscando: 0, encontrado_vivo: 0, encontrado_fallecido: 0, hospitalizado: 0 };
+      for (const est of estados) {
+        const { count } = await supabase.from("desaparecidos").select("*", { count: "exact", head: true }).eq("estado", est);
+        counts[est] = count ?? 0;
+      }
+      setContadores(counts);
+    };
+    fetchContadores();
+  }, [reportes]);
 
   const buscarDuplicados = (nom: string, ape: string) => {
     if (dupTimeout.current) clearTimeout(dupTimeout.current);
@@ -403,12 +417,6 @@ export default function DesaparecidosSection() {
     setMostrarFormulario(true);
   };
 
-  const contadores = {
-    buscando: reportes.filter((r) => r.estado === "buscando").length,
-    encontrado_vivo: reportes.filter((r) => r.estado === "encontrado_vivo").length,
-    encontrado_fallecido: reportes.filter((r) => r.estado === "encontrado_fallecido").length,
-    hospitalizado: reportes.filter((r) => r.estado === "hospitalizado").length,
-  };
 
   return (
     <div>
@@ -424,7 +432,7 @@ export default function DesaparecidosSection() {
         </div>
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-gray-500">{contadores.encontrado_fallecido}</p>
-          <p className="text-[10px] text-gray-400">Fallecidos</p>
+          <p className="text-[10px] text-gray-400">No sobrevivieron</p>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
