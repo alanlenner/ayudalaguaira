@@ -300,12 +300,15 @@ export default function DesaparecidosSection() {
   const [duplicados, setDuplicados] = useState<Duplicado[]>([]);
   const dupTimeout = useRef<NodeJS.Timeout | null>(null);
   const [contadores, setContadores] = useState({ buscando: 0, encontrado_vivo: 0, encontrado_fallecido: 0, hospitalizado: 0 });
+  const reportesRef = useRef<Reporte[]>([]);
+  reportesRef.current = reportes;
 
   const cargarReportes = useCallback(
     async (reset = true) => {
       if (reset) setCargando(true);
       else setCargandoMas(true);
-      const offset = reset ? 0 : reportes.length;
+
+      const currentLength = reset ? 0 : reportesRef.current.length;
       let query = supabase
         .from("desaparecidos")
         .select("id, nombre, apellido, zona, telefono, foto_url, ultima_ubicacion, descripcion, estado, created_at");
@@ -315,11 +318,15 @@ export default function DesaparecidosSection() {
       } else if (zonaActiva !== "Todas") {
         query = query.eq("zona", zonaActiva);
       }
-      const { data } = await query.order("created_at", { ascending: false }).range(offset, offset + PAGE_SIZE - 1);
+      const { data } = await query.order("created_at", { ascending: false }).range(currentLength, currentLength + PAGE_SIZE - 1);
       if (data) {
         const typed = data as Reporte[];
         if (reset) setReportes(typed);
-        else setReportes((prev) => [...prev, ...typed]);
+        else setReportes((prev) => {
+          const ids = new Set(prev.map((p) => p.id));
+          const nuevos = typed.filter((t) => !ids.has(t.id));
+          return [...prev, ...nuevos];
+        });
         setHayMas(typed.length === PAGE_SIZE);
       }
       setCargando(false);
