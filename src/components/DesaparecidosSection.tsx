@@ -88,50 +88,51 @@ function TarjetaReporte({ pub }: { pub: Reporte }) {
   const telLimpio = limpiarTelefono(pub.telefono);
 
   return (
-    <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="flex p-4 gap-4">
-        <div className="flex-shrink-0">
-          {pub.foto_url ? (
-            <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-20 h-20 rounded-xl object-cover" loading="lazy" />
-          ) : (
-            <div className="w-20 h-20 rounded-xl bg-marca-fondo flex items-center justify-center">
-              <User className="w-8 h-8 text-slate-300" />
-            </div>
-          )}
+    <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
+      {/* Foto o placeholder */}
+      {pub.foto_url ? (
+        <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full h-36 object-cover" loading="lazy" />
+      ) : (
+        <div className="w-full h-28 bg-marca-fondo flex items-center justify-center">
+          <User className="w-10 h-10 text-slate-300" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-medium text-base text-slate-800 leading-tight truncate">
-              {pub.nombre} {pub.apellido}
-            </h3>
-            <StatusBadge estado={pub.estado} />
-          </div>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-marca-azul/10 text-marca-azul rounded-full text-xs font-medium">
-              <MapPin className="w-3 h-3" />
-              {pub.zona}
-            </span>
-          </div>
-          {pub.ultima_ubicacion && (
-            <p className="text-xs text-slate-500 mt-1 truncate">Visto en: {pub.ultima_ubicacion}</p>
-          )}
-          {pub.descripcion && (
-            <p className="text-sm text-slate-500 mt-1.5 line-clamp-2">{pub.descripcion}</p>
-          )}
+      )}
+
+      {/* Info */}
+      <div className="p-3 flex-1 flex flex-col">
+        <div className="flex items-start justify-between gap-1 mb-1.5">
+          <h3 className="font-medium text-sm text-slate-800 leading-tight line-clamp-1">
+            {pub.nombre} {pub.apellido}
+          </h3>
+          <StatusBadge estado={pub.estado} />
         </div>
-      </div>
-      <div className="flex items-center justify-between px-4 pb-4 pt-1">
-        <span className="flex items-center gap-1 text-xs text-slate-400">
-          <Clock className="w-3 h-3" />
-          {tiempoRelativo(pub.created_at)}
-        </span>
-        <div className="flex gap-2">
-          <a href={`tel:${telLimpio}`} className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition">
-            <Phone className="w-3.5 h-3.5" />
+
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-marca-azul/10 text-marca-azul rounded-full text-[10px] font-medium">
+            <MapPin className="w-2.5 h-2.5" />
+            {pub.zona}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-slate-400">
+            <Clock className="w-2.5 h-2.5" />
+            {tiempoRelativo(pub.created_at)}
+          </span>
+        </div>
+
+        {pub.ultima_ubicacion && (
+          <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1">Visto en: {pub.ultima_ubicacion}</p>
+        )}
+        {pub.descripcion && (
+          <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{pub.descripcion}</p>
+        )}
+
+        {/* Contacto */}
+        <div className="flex gap-1.5 mt-auto pt-2.5">
+          <a href={`tel:${telLimpio}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
+            <Phone className="w-3 h-3" />
             Llamar
           </a>
-          <a href={waLink(pub.telefono)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-marca-verde text-white rounded-full text-xs font-medium hover:opacity-90 transition">
-            <MessageCircle className="w-3.5 h-3.5" />
+          <a href={waLink(pub.telefono)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-verde text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
+            <MessageCircle className="w-3 h-3" />
             WhatsApp
           </a>
         </div>
@@ -314,7 +315,7 @@ export default function DesaparecidosSection() {
       </button>
 
       {/* Feed */}
-      <div className="mt-4 pb-8 space-y-3">
+      <div className="mt-4 pb-8">
         {cargando ? (
           <div className="text-center py-16">
             <Loader2 className="w-8 h-8 text-marca-azul animate-spin mx-auto mb-3" />
@@ -347,9 +348,11 @@ export default function DesaparecidosSection() {
           </div>
         ) : (
           <>
-            {reportes.map((r) => (<TarjetaReporte key={r.id} pub={r} />))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {reportes.map((r) => (<TarjetaReporte key={r.id} pub={r} />))}
+            </div>
             {hayMas && (
-              <button onClick={() => cargarReportes(false)} disabled={cargandoMas} className="w-full py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
+              <button onClick={() => cargarReportes(false)} disabled={cargandoMas} className="w-full mt-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
                 {cargandoMas ? <><Loader2 className="w-4 h-4 animate-spin" /> Cargando...</> : "Cargar más reportes"}
               </button>
             )}
