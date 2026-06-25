@@ -51,39 +51,29 @@ function TarjetaRecurso({ rec }: { rec: Recurso }) {
   const esNecesito = rec.tipo_publicacion === "necesito";
 
   return (
-    <article
-      className={`bg-white rounded-2xl border-2 overflow-hidden shadow-sm ${
-        !esActivo
-          ? "border-green-300 opacity-75"
-          : esNecesito
-          ? "border-orange-300"
-          : "border-blue-300"
-      }`}
-    >
-      {/* Barra de estado */}
-      <div
-        className={`text-white text-center py-1.5 text-xs font-bold tracking-wide ${
-          !esActivo
-            ? "bg-green-500"
-            : esNecesito
-            ? "bg-orange-500"
-            : "bg-blue-500"
-        }`}
-      >
-        {!esActivo ? "RESUELTO" : esNecesito ? "SE NECESITA" : "SE OFRECE"}
-      </div>
-
+    <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="p-4">
-        <div className="flex items-start gap-3 mb-2">
-          <span className="text-2xl">{cat.icon}</span>
-          <div className="flex-1 min-w-0">
-            <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium mb-1">
-              {cat.label}
-            </span>
-            <p className="text-sm text-slate-800 leading-relaxed line-clamp-3">
-              {rec.descripcion}
-            </p>
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <span className="text-2xl">{cat.icon}</span>
+            <div className="flex-1 min-w-0">
+              <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium mb-1">
+                {cat.label}
+              </span>
+              <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+                {rec.descripcion}
+              </p>
+            </div>
           </div>
+          <span className={`flex-shrink-0 ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+            !esActivo
+              ? "bg-marca-verde/10 text-marca-verde"
+              : esNecesito
+              ? "bg-amber-100 text-amber-700"
+              : "bg-marca-azul/10 text-marca-azul"
+          }`}>
+            {!esActivo ? "Resuelto" : esNecesito ? "Se necesita" : "Se ofrece"}
+          </span>
         </div>
 
         <div className="space-y-1 text-xs text-slate-500 mb-3">
@@ -92,7 +82,7 @@ function TarjetaRecurso({ rec }: { rec: Recurso }) {
             <span className="truncate">{rec.direccion}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+            <span className="px-2 py-0.5 bg-marca-azul/10 text-marca-azul rounded-full text-xs font-medium">
               {rec.zona}
             </span>
           </div>
@@ -106,7 +96,7 @@ function TarjetaRecurso({ rec }: { rec: Recurso }) {
           <div className="flex gap-2">
             <a
               href={`tel:${telLimpio}`}
-              className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition"
+              className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition"
             >
               <Phone className="w-3.5 h-3.5" />
               Llamar
@@ -115,7 +105,7 @@ function TarjetaRecurso({ rec }: { rec: Recurso }) {
               href={waLink(rec.celular_contacto)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 transition"
+              className="flex items-center gap-1.5 px-3 py-2 bg-marca-verde text-white rounded-full text-xs font-medium hover:opacity-90 transition"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               WhatsApp
@@ -243,12 +233,12 @@ export default function RecursosSection() {
   return (
     <div>
       {/* Toggle Necesito / Ofrezco */}
-      <div className="mt-3 flex bg-slate-100 rounded-xl p-1">
+      <div className="mt-3 flex bg-white border border-slate-200 rounded-2xl p-1">
         <button
           onClick={() => setTipo("necesito")}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tipo === "necesito"
-              ? "bg-orange-500 text-white shadow-sm"
+              ? "bg-marca-azul text-white"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -256,9 +246,9 @@ export default function RecursosSection() {
         </button>
         <button
           onClick={() => setTipo("ofrezco")}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tipo === "ofrezco"
-              ? "bg-blue-500 text-white shadow-sm"
+              ? "bg-marca-azul text-white"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -270,13 +260,13 @@ export default function RecursosSection() {
       <div className="flex gap-2 mt-3">
         <button
           onClick={() => abrirFormulario("necesito")}
-          className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-sm transition-colors shadow-md"
+          className="flex-1 bg-marca-dorado hover:opacity-90 text-white py-3 rounded-2xl font-medium text-sm transition-all"
         >
           Publicar necesidad
         </button>
         <button
           onClick={() => abrirFormulario("ofrezco")}
-          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-bold text-sm transition-colors shadow-md"
+          className="flex-1 bg-marca-dorado hover:opacity-90 text-white py-3 rounded-2xl font-medium text-sm transition-all"
         >
           Publicar oferta
         </button>
@@ -289,7 +279,7 @@ export default function RecursosSection() {
             onClick={() => setFiltroZona("todas")}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroZona === "todas"
-                ? "bg-slate-900 text-white"
+                ? "bg-marca-azul text-white"
                 : "bg-white text-slate-600 border border-slate-200"
             }`}
           >
@@ -301,7 +291,7 @@ export default function RecursosSection() {
               onClick={() => setFiltroZona(z)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 filtroZona === z
-                  ? "bg-slate-900 text-white"
+                  ? "bg-marca-azul text-white"
                   : "bg-white text-slate-600 border border-slate-200"
               }`}
             >
@@ -314,7 +304,7 @@ export default function RecursosSection() {
             onClick={() => setFiltroCategoria("todas")}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroCategoria === "todas"
-                ? "bg-slate-700 text-white"
+                ? "bg-marca-azul/80 text-white"
                 : "bg-white text-slate-600 border border-slate-200"
             }`}
           >
@@ -326,7 +316,7 @@ export default function RecursosSection() {
               onClick={() => setFiltroCategoria(c.value)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 filtroCategoria === c.value
-                  ? "bg-slate-700 text-white"
+                  ? "bg-marca-azul/80 text-white"
                   : "bg-white text-slate-600 border border-slate-200"
               }`}
             >
@@ -340,15 +330,26 @@ export default function RecursosSection() {
       <div className="mt-4 pb-8 space-y-3">
         {cargando ? (
           <div className="text-center py-16">
-            <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-3" />
+            <Loader2 className="w-8 h-8 text-marca-azul animate-spin mx-auto mb-3" />
             <p className="text-slate-500 text-sm">Cargando recursos...</p>
           </div>
         ) : recursos.length === 0 ? (
-          <div className="text-center py-16">
-            <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">
-              No hay publicaciones de tipo &quot;{tipo === "necesito" ? "Necesito" : "Ofrezco"}&quot;
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+            <div className="bg-marca-verde/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-7 h-7 text-marca-verde" />
+            </div>
+            <p className="text-slate-700 font-medium">
+              Aún no hay publicaciones de tipo "{tipo === "necesito" ? "Necesito" : "Ofrezco"}"
             </p>
+            <p className="text-slate-400 text-sm mt-2 max-w-xs mx-auto">
+              {tipo === "necesito" ? "Si necesitas algo, publica tu solicitud para que otros puedan ayudarte." : "Si tienes algo para ofrecer, publícalo para que llegue a quien lo necesita."}
+            </p>
+            <button
+              onClick={() => abrirFormulario(tipo)}
+              className="mt-4 bg-marca-dorado hover:opacity-90 text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all"
+            >
+              {tipo === "necesito" ? "Publicar necesidad" : "Publicar oferta"}
+            </button>
           </div>
         ) : (
           <>
@@ -377,7 +378,7 @@ export default function RecursosSection() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center">
           <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
-              <h2 className="font-bold text-lg">
+              <h2 className="font-medium text-lg">
                 {tokenGenerado
                   ? "Publicación exitosa"
                   : tipoFormulario === "necesito"
@@ -391,10 +392,10 @@ export default function RecursosSection() {
 
             {tokenGenerado ? (
               <div className="p-6 text-center space-y-4">
-                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                  <Check className="w-8 h-8 text-green-600" />
+                <div className="bg-marca-verde/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                  <Check className="w-8 h-8 text-marca-verde" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">¡Publicado!</h3>
+                <h3 className="text-lg font-medium text-slate-800">¡Publicado — gracias por ayudar!</h3>
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
                   <div className="flex items-start gap-2">
                     <Link2 className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -438,12 +439,12 @@ export default function RecursosSection() {
                 {/* Categoría */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Categoría <span className="text-red-500">*</span>
+                    Categoría <span className="text-marca-dorado">*</span>
                   </label>
                   <select
                     value={categoria}
                     onChange={(e) => setCategoria(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white"
                   >
                     {CATEGORIAS_RECURSO.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -456,14 +457,14 @@ export default function RecursosSection() {
                 {/* Descripción */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Descripción <span className="text-red-500">*</span>
+                    Descripción <span className="text-marca-dorado">*</span>
                   </label>
                   <textarea
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     placeholder="Qué específicamente, cantidad aproximada..."
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none"
                     required
                   />
                 </div>
@@ -471,12 +472,12 @@ export default function RecursosSection() {
                 {/* Zona */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Zona <span className="text-red-500">*</span>
+                    Zona <span className="text-marca-dorado">*</span>
                   </label>
                   <select
                     value={zona}
                     onChange={(e) => setZona(e.target.value as ZonaDB)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white"
                   >
                     {ZONAS_DB.map((z) => (
                       <option key={z} value={z}>{z}</option>
@@ -487,14 +488,14 @@ export default function RecursosSection() {
                 {/* Dirección */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Dirección o punto de referencia <span className="text-red-500">*</span>
+                    Dirección o punto de referencia <span className="text-marca-dorado">*</span>
                   </label>
                   <input
                     type="text"
                     value={direccion}
                     onChange={(e) => setDireccion(e.target.value)}
                     placeholder="Ej: Frente a la plaza Bolívar de Naiguatá"
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
                     required
                   />
                 </div>
@@ -502,14 +503,14 @@ export default function RecursosSection() {
                 {/* Celular */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Celular de contacto <span className="text-red-500">*</span>
+                    Celular de contacto <span className="text-marca-dorado">*</span>
                   </label>
                   <input
                     type="tel"
                     value={celular}
                     onChange={(e) => setCelular(e.target.value)}
                     placeholder="0412-1234567"
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
                     required
                   />
                 </div>
@@ -517,11 +518,7 @@ export default function RecursosSection() {
                 <button
                   type="submit"
                   disabled={enviando}
-                  className={`w-full py-3 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 ${
-                    tipoFormulario === "necesito"
-                      ? "bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300"
-                      : "bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300"
-                  }`}
+                  className="w-full py-3 rounded-xl font-medium text-white transition-all flex items-center justify-center gap-2 bg-marca-dorado hover:opacity-90 disabled:opacity-50"
                 >
                   {enviando ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Publicando...</>

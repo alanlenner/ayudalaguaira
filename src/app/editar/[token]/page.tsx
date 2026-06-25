@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import {
-  AlertTriangle,
+  Heart,
   Camera,
   Check,
   Loader2,
@@ -138,9 +138,9 @@ export default function EditarRegistro() {
   // --- Loading / Error / Success states ---
   if (cargando) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-marca-fondo flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-red-500 animate-spin mx-auto mb-3" />
+          <Loader2 className="w-8 h-8 text-marca-azul animate-spin mx-auto mb-3" />
           <p className="text-slate-500 text-sm">Buscando registro...</p>
         </div>
       </div>
@@ -149,14 +149,14 @@ export default function EditarRegistro() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-marca-fondo flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-sm w-full text-center">
-          <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-amber-600" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 mb-2">Registro no encontrado</h2>
+          <h2 className="text-lg font-medium text-slate-800 mb-2">Registro no encontrado</h2>
           <p className="text-sm text-slate-500 mb-4">{error}</p>
-          <a href="/" className="inline-flex items-center gap-2 text-sm text-red-600 font-medium hover:underline">
+          <a href="/" className="inline-flex items-center gap-2 text-sm text-marca-azul font-medium hover:underline">
             <ArrowLeft className="w-4 h-4" /> Volver al inicio
           </a>
         </div>
@@ -167,12 +167,12 @@ export default function EditarRegistro() {
   if (exito) {
     const msg = tipo === "colaboradores" ? "Perfil actualizado" : tipo === "recursos" ? "Publicación actualizada" : "Reporte actualizado";
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-marca-fondo flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-sm w-full text-center">
-          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-600" />
+          <div className="bg-marca-verde/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-marca-verde" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 mb-2">{msg}</h2>
+          <h2 className="text-lg font-medium text-slate-800 mb-2">{msg}</h2>
           <p className="text-sm text-slate-500 mb-4">Los cambios ya son visibles.</p>
           <a href="/" className="inline-block w-full bg-slate-900 text-white py-3 rounded-xl font-medium text-sm">Volver al inicio</a>
         </div>
@@ -184,11 +184,11 @@ export default function EditarRegistro() {
   const fotoMostrar = fotoPreview || (formData.foto_url as string | null);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-gradient-to-r from-red-700 to-red-600 text-white shadow-lg">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen bg-marca-fondo">
+      <header className="bg-marca-azul text-white">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <a href="/" className="hover:bg-white/10 p-1 rounded-lg transition"><ArrowLeft className="w-5 h-5" /></a>
-          <h1 className="text-lg font-bold">{titulo}</h1>
+          <h1 className="text-lg font-medium">{titulo}</h1>
         </div>
       </header>
 
@@ -198,7 +198,7 @@ export default function EditarRegistro() {
           {/* ========== DESAPARECIDOS ========== */}
           {tipo === "desaparecidos" && (
             <>
-              <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-red-400 transition">
+              <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-marca-azul/40 hover:bg-marca-azul/5 transition">
                 {fotoMostrar ? (
                   <div className="flex items-center gap-3">
                     <img src={fotoMostrar} alt="Foto" className="w-16 h-16 object-cover rounded-lg" />
@@ -215,39 +215,39 @@ export default function EditarRegistro() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
-                <input type="text" value={(formData.nombre as string) || ""} onChange={(e) => set("nombre", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                <input type="text" value={(formData.nombre as string) || ""} onChange={(e) => set("nombre", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Apellido *</label>
-                <input type="text" value={(formData.apellido as string) || ""} onChange={(e) => set("apellido", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                <input type="text" value={(formData.apellido as string) || ""} onChange={(e) => set("apellido", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Zona *</label>
-                <select value={(formData.zona as string) || ""} onChange={(e) => set("zona", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white" required>
+                <select value={(formData.zona as string) || ""} onChange={(e) => set("zona", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white" required>
                   {ZONAS_DB.map((z) => <option key={z} value={z}>{z}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Celular de contacto *</label>
-                <input type="tel" value={(formData.telefono as string) || ""} onChange={(e) => set("telefono", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                <input type="tel" value={(formData.telefono as string) || ""} onChange={(e) => set("telefono", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Última ubicación conocida</label>
-                <input type="text" value={(formData.ultima_ubicacion as string) || ""} onChange={(e) => set("ultima_ubicacion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+                <input type="text" value={(formData.ultima_ubicacion as string) || ""} onChange={(e) => set("ultima_ubicacion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
-                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none" />
+                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
-                <select value={(formData.estado as string) || "buscando"} onChange={(e) => set("estado", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white">
+                <select value={(formData.estado as string) || "buscando"} onChange={(e) => set("estado", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white">
                   <option value="buscando">Buscando</option>
                   <option value="encontrado_vivo">Encontrado vivo</option>
                   <option value="encontrado_fallecido">Encontrado fallecido</option>
                 </select>
                 {(formData.estado as string) !== "buscando" && (
-                  <p className="text-xs text-green-600 mt-1 font-medium">
+                  <p className="text-xs text-marca-verde mt-1 font-medium">
                     {(formData.estado as string) === "encontrado_vivo" ? "Se marcará como encontrado vivo" : "Se marcará como encontrado fallecido"}
                   </p>
                 )}
@@ -260,13 +260,13 @@ export default function EditarRegistro() {
             <>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
-                <input type="text" value={(formData.nombre as string) || ""} onChange={(e) => set("nombre", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+                <input type="text" value={(formData.nombre as string) || ""} onChange={(e) => set("nombre", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de ayuda *</label>
                 <div className="flex flex-wrap gap-2">
                   {TIPOS_AYUDA.map((t) => (
-                    <button key={t.value} type="button" onClick={() => toggleTipoAyuda(t.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipoAyudaSeleccion.includes(t.value) ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                    <button key={t.value} type="button" onClick={() => toggleTipoAyuda(t.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipoAyudaSeleccion.includes(t.value) ? "bg-marca-azul text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
                       {t.label}
                     </button>
                   ))}
@@ -274,24 +274,24 @@ export default function EditarRegistro() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Ubicación *</label>
-                <input type="text" value={(formData.ubicacion as string) || ""} onChange={(e) => set("ubicacion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+                <input type="text" value={(formData.ubicacion as string) || ""} onChange={(e) => set("ubicacion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Disponibilidad</label>
-                <input type="text" value={(formData.disponibilidad as string) || ""} onChange={(e) => set("disponibilidad", e.target.value)} placeholder="Ej: fines de semana, 24/7" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <input type="text" value={(formData.disponibilidad as string) || ""} onChange={(e) => set("disponibilidad", e.target.value)} placeholder="Ej: fines de semana, 24/7" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Contacto *</label>
-                <input type="text" value={(formData.contacto as string) || ""} onChange={(e) => set("contacto", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+                <input type="text" value={(formData.contacto as string) || ""} onChange={(e) => set("contacto", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
-                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" />
+                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" />
               </div>
               <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-4">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" checked={formData.activo as boolean} onChange={(e) => set("activo", e.target.checked)} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-marca-azul/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-marca-verde"></div>
                 </label>
                 <div>
                   <p className="text-sm font-medium text-slate-700">Activo como colaborador</p>
@@ -306,36 +306,36 @@ export default function EditarRegistro() {
             <>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Categoría *</label>
-                <select value={(formData.categoria as string) || ""} onChange={(e) => set("categoria", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <select value={(formData.categoria as string) || ""} onChange={(e) => set("categoria", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white">
                   {CATEGORIAS_RECURSO.map((c) => <option key={c.value} value={c.value}>{c.icon} {c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Descripción *</label>
-                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={3} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" required />
+                <textarea value={(formData.descripcion as string) || ""} onChange={(e) => set("descripcion", e.target.value)} rows={3} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Zona *</label>
-                <select value={(formData.zona as string) || ""} onChange={(e) => set("zona", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <select value={(formData.zona as string) || ""} onChange={(e) => set("zona", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white">
                   {ZONAS_DB.map((z) => <option key={z} value={z}>{z}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Dirección *</label>
-                <input type="text" value={(formData.direccion as string) || ""} onChange={(e) => set("direccion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                <input type="text" value={(formData.direccion as string) || ""} onChange={(e) => set("direccion", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Celular de contacto *</label>
-                <input type="tel" value={(formData.celular_contacto as string) || ""} onChange={(e) => set("celular_contacto", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                <input type="tel" value={(formData.celular_contacto as string) || ""} onChange={(e) => set("celular_contacto", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
-                <select value={(formData.estado as string) || "activo"} onChange={(e) => set("estado", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <select value={(formData.estado as string) || "activo"} onChange={(e) => set("estado", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white">
                   <option value="activo">Activo</option>
                   <option value="resuelto">Resuelto</option>
                 </select>
                 {(formData.estado as string) === "resuelto" && (
-                  <p className="text-xs text-green-600 mt-1 font-medium">Se marcará como resuelto en el feed</p>
+                  <p className="text-xs text-marca-verde mt-1 font-medium">Se marcará como resuelto en el feed</p>
                 )}
               </div>
             </>
@@ -344,11 +344,7 @@ export default function EditarRegistro() {
           <button
             type="submit"
             disabled={guardando}
-            className={`w-full py-3 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 ${
-              tipo === "colaboradores" ? "bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400"
-              : tipo === "recursos" ? "bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300"
-              : "bg-red-600 hover:bg-red-700 disabled:bg-red-400"
-            }`}
+            className="w-full py-3 rounded-xl font-medium text-white transition-all flex items-center justify-center gap-2 bg-marca-dorado hover:opacity-90 disabled:opacity-50"
           >
             {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : "Guardar cambios"}
           </button>
