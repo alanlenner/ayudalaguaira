@@ -484,6 +484,13 @@ export default function DesaparecidosSection() {
         Reportar a alguien que buscamos
       </button>
 
+      {/* Disclaimer hospitales */}
+      {(zonaActiva === "Hospital Pérez Carreño" || zonaActiva === "Domingo Luciani") && (
+        <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-xs text-yellow-700 font-medium text-center">
+          ⚠️ Información no confirmada, cargada de forma voluntaria
+        </div>
+      )}
+
       {/* Feed */}
       <div className="mt-4 pb-8">
         {cargando ? (
