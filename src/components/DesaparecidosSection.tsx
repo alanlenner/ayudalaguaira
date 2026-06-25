@@ -428,7 +428,7 @@ export default function DesaparecidosSection() {
   return (
     <div>
       {/* Métricas de estado */}
-      <div className="grid grid-cols-4 gap-2 mt-4">
+      <div className="grid grid-cols-3 gap-2 mt-4">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
           <p className="text-[10px] text-amber-600">Buscando</p>
@@ -436,10 +436,6 @@ export default function DesaparecidosSection() {
         <div className="bg-green-50 border border-green-200 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo}</p>
           <p className="text-[10px] text-green-600">Encontrados</p>
-        </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-2 text-center">
-          <p className="text-lg font-bold text-gray-500">{contadores.encontrado_fallecido}</p>
-          <p className="text-[10px] text-gray-400">No sobrevivieron</p>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
