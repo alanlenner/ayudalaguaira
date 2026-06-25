@@ -433,7 +433,8 @@ export default function DesaparecidosSection() {
   return (
     <div>
       {/* Métricas de estado */}
-      <div className="grid grid-cols-3 gap-2 mt-4">
+      <p className="text-xs text-slate-500 mt-4 mb-1">Toque un recuadro para filtrar por estado. Toque de nuevo para quitar el filtro.</p>
+      <div className="grid grid-cols-3 gap-2">
         <button onClick={() => setFiltroEstado(filtroEstado === "buscando" ? null : "buscando")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-amber-400 bg-amber-100 border border-amber-300" : "bg-amber-50 border border-amber-200"}`}>
           <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
           <p className="text-[10px] text-amber-600">Buscando</p>
@@ -448,8 +449,20 @@ export default function DesaparecidosSection() {
         </button>
       </div>
 
+      {/* Filtro activo indicador */}
+      {(filtroEstado || zonaActiva !== "Todas") && (
+        <div className="mt-2 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600">
+          Filtrando por: {filtroEstado && <strong>{filtroEstado === "buscando" ? "Buscando" : filtroEstado === "encontrado_vivo" ? "Encontrados" : "Hospitalizados"}</strong>}
+          {filtroEstado && zonaActiva !== "Todas" && " + "}
+          {zonaActiva !== "Todas" && <strong>{zonaActiva}</strong>}
+          {" — "}
+          <button onClick={() => { setFiltroEstado(null); setZonaActiva("Todas"); }} className="underline text-marca-azul font-medium">Quitar filtros</button>
+        </div>
+      )}
+
       {/* Tabs de zona */}
-      <div className="flex flex-wrap gap-2 mt-4">
+      <p className="text-xs text-slate-500 mt-3 mb-1">Seleccione una zona para ver solo esa localidad:</p>
+      <div className="flex flex-wrap gap-2">
         {ZONAS_FILTRO.map((z) => (
           <button key={z} onClick={() => setZonaActiva(z)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${zonaActiva === z ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
             {z}
