@@ -156,7 +156,7 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {pub.foto_url && (
-          <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full h-52 object-cover" />
+          <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full max-h-[60vh] object-contain bg-slate-100" />
         )}
         <div className="p-5 space-y-3">
           <div className="flex items-start justify-between">
