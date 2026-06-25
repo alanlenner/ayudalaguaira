@@ -280,6 +280,7 @@ export default function DesaparecidosSection() {
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [zonaActiva, setZonaActiva] = useState<Zona>("Todas");
   const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
@@ -319,6 +320,9 @@ export default function DesaparecidosSection() {
       } else if (zonaActiva !== "Todas") {
         query = query.eq("zona", zonaActiva);
       }
+      if (filtroEstado) {
+        query = query.eq("estado", filtroEstado);
+      }
       const { data } = await query.order("created_at", { ascending: false }).range(currentLength, currentLength + PAGE_SIZE - 1);
       if (data) {
         const typed = data as Reporte[];
@@ -333,7 +337,7 @@ export default function DesaparecidosSection() {
       setCargando(false);
       setCargandoMas(false);
     },
-    [zonaActiva, busqueda]
+    [zonaActiva, busqueda, filtroEstado]
   );
 
   useEffect(() => { cargarReportes(true); }, [cargarReportes]);
@@ -430,18 +434,18 @@ export default function DesaparecidosSection() {
     <div>
       {/* Métricas de estado */}
       <div className="grid grid-cols-3 gap-2 mt-4">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 text-center">
+        <button onClick={() => setFiltroEstado(filtroEstado === "buscando" ? null : "buscando")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-amber-400 bg-amber-100 border border-amber-300" : "bg-amber-50 border border-amber-200"}`}>
           <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
           <p className="text-[10px] text-amber-600">Buscando</p>
-        </div>
-        <div className="bg-green-50 border border-green-200 rounded-xl p-2 text-center">
+        </button>
+        <button onClick={() => setFiltroEstado(filtroEstado === "encontrado_vivo" ? null : "encontrado_vivo")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrado_vivo" ? "ring-2 ring-green-400 bg-green-100 border border-green-300" : "bg-green-50 border border-green-200"}`}>
           <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo}</p>
           <p className="text-[10px] text-green-600">Encontrados</p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 text-center">
+        </button>
+        <button onClick={() => setFiltroEstado(filtroEstado === "hospitalizado" ? null : "hospitalizado")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-blue-400 bg-blue-100 border border-blue-300" : "bg-blue-50 border border-blue-200"}`}>
           <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
           <p className="text-[10px] text-blue-600">Hospitalizados</p>
-        </div>
+        </button>
       </div>
 
       {/* Tabs de zona */}
