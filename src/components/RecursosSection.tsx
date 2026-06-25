@@ -44,16 +44,17 @@ function catInfo(val: string) {
   return CATEGORIAS_RECURSO.find((c) => c.value === val) || { value: val, label: val, icon: "📦" };
 }
 
-function TarjetaRecurso({ rec }: { rec: Recurso }) {
+function TarjetaRecurso({ rec, onSelect }: { rec: Recurso; onSelect: (r: Recurso) => void }) {
   const cat = catInfo(rec.categoria);
-  const telLimpio = limpiarTelefono(rec.celular_contacto);
   const esActivo = rec.estado === "activo";
   const esNecesito = rec.tipo_publicacion === "necesito";
 
   return (
-    <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
+    <article
+      onClick={() => onSelect(rec)}
+      className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all"
+    >
       <div className="p-3 flex-1 flex flex-col">
-        {/* Header: icon + status */}
         <div className="flex items-start justify-between gap-1 mb-1.5">
           <div className="flex items-center gap-1.5">
             <span className="text-lg">{cat.icon}</span>
@@ -86,24 +87,66 @@ function TarjetaRecurso({ rec }: { rec: Recurso }) {
             {tiempoRelativo(rec.created_at)}
           </span>
         </div>
-
-        {rec.direccion && (
-          <p className="text-[10px] text-slate-400 mt-1 line-clamp-1">📍 {rec.direccion}</p>
-        )}
-
-        {/* Contacto */}
-        <div className="flex gap-1.5 mt-auto pt-2.5">
-          <a href={`tel:${telLimpio}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
-            <Phone className="w-3 h-3" />
-            Llamar
-          </a>
-          <a href={waLink(rec.celular_contacto)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-verde text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
-            <MessageCircle className="w-3 h-3" />
-            WhatsApp
-          </a>
-        </div>
       </div>
     </article>
+  );
+}
+
+function ModalDetalleRecurso({ rec, onClose }: { rec: Recurso; onClose: () => void }) {
+  const cat = catInfo(rec.categoria);
+  const telLimpio = limpiarTelefono(rec.celular_contacto);
+  const esActivo = rec.estado === "activo";
+  const esNecesito = rec.tipo_publicacion === "necesito";
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
+      <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5 space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{cat.icon}</span>
+              <h2 className="text-lg font-semibold text-slate-800">{cat.label}</h2>
+            </div>
+            <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition">
+              <X className="w-5 h-5 text-slate-400" />
+            </button>
+          </div>
+          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+            !esActivo
+              ? "bg-marca-verde/10 text-marca-verde"
+              : esNecesito
+              ? "bg-amber-100 text-amber-700"
+              : "bg-marca-azul/10 text-marca-azul"
+          }`}>
+            {!esActivo ? "Resuelto" : esNecesito ? "Se necesita" : "Se ofrece"}
+          </span>
+          <p className="text-sm text-slate-600">{rec.descripcion}</p>
+          <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-marca-azul/10 text-marca-azul rounded-full font-medium">
+              <MapPin className="w-3 h-3" />
+              {rec.zona}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {tiempoRelativo(rec.created_at)}
+            </span>
+          </div>
+          {rec.direccion && (
+            <p className="text-sm text-slate-600"><strong>Dirección:</strong> {rec.direccion}</p>
+          )}
+          <div className="flex gap-2 pt-2">
+            <a href={`tel:${telLimpio}`} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+              <Phone className="w-4 h-4" />
+              Llamar
+            </a>
+            <a href={waLink(rec.celular_contacto)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -120,6 +163,7 @@ export default function RecursosSection() {
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [seleccionado, setSeleccionado] = useState<Recurso | null>(null);
 
   // Form
   const [categoria, setCategoria] = useState("alimentos");
@@ -345,7 +389,7 @@ export default function RecursosSection() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {recursos.map((r) => (
-                <TarjetaRecurso key={r.id} rec={r} />
+                <TarjetaRecurso key={r.id} rec={r} onSelect={setSeleccionado} />
               ))}
             </div>
             {hayMas && (
@@ -522,6 +566,11 @@ export default function RecursosSection() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Modal detalle */}
+      {seleccionado && (
+        <ModalDetalleRecurso rec={seleccionado} onClose={() => setSeleccionado(null)} />
       )}
     </div>
   );
