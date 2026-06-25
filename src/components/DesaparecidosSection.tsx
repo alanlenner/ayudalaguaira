@@ -38,7 +38,7 @@ const HASHTAGS: Record<ZonaDB, string> = {
   "Maiquetía": "#MaiquetiaDesaparecidos",
   "Tanaguarena": "#TanaguarenaDesaparecidos",
   "Macuto": "#MacutoDesaparecidos",
-  "Centro Pérez Carreño": "#PerezCarrenoDesaparecidos",
+  "Hospital Pérez Carreño": "#PerezCarrenoDesaparecidos",
 };
 
 interface Reporte {

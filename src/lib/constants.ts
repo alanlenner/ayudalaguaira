@@ -1,4 +1,4 @@
-export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Centro Pérez Carreño"] as const;
+export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Hospital Pérez Carreño"] as const;
 export type ZonaDB = (typeof ZONAS_DB)[number];
 
 export const TIPOS_AYUDA = [
