@@ -38,13 +38,9 @@ export default function Footer() {
             antes de compartirse.
           </p>
 
-          <div className="flex items-center justify-center gap-4 text-xs text-white/35">
+          <div className="flex items-center justify-center text-xs text-white/35">
             <a href="/aviso-legal" className="hover:text-white/60 transition underline">
               Aviso legal
-            </a>
-            <span>·</span>
-            <a href="mailto:alanlenner@gmail.com" className="hover:text-white/60 transition underline">
-              Reportar problema del sitio
             </a>
           </div>
         </div>

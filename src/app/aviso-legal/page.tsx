@@ -18,7 +18,7 @@ export default function AvisoLegal() {
             <h2 className="text-lg font-medium text-slate-800 mb-2">Naturaleza del sitio</h2>
             <p>
               Este sitio web es una herramienta ciudadana, voluntaria y sin fines de lucro,
-              creada para facilitar la búsqueda de personas tras el sismo del 24 de junio de 2025
+              creada para facilitar la búsqueda de personas tras el sismo del 24 de junio de 2026
               en el estado La Guaira, Venezuela. No es operado por ningún organismo gubernamental,
               ONG o empresa. No recibe financiamiento externo ni cobra por su uso.
             </p>
@@ -64,11 +64,7 @@ export default function AvisoLegal() {
             </p>
             <p className="mt-2">
               Si necesitas que un reporte sea eliminado y no conservas el enlace de edición,
-              puedes solicitar su remoción escribiendo a{" "}
-              <a href="mailto:alanlenner@gmail.com" className="text-marca-azul underline">
-                alanlenner@gmail.com
-              </a>{" "}
-              indicando los datos del reporte que deseas remover y el motivo.
+              no existe actualmente un mecanismo automático de remoción.
             </p>
           </section>
 
@@ -103,18 +99,9 @@ export default function AvisoLegal() {
             </p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-medium text-slate-800 mb-2">Contacto</h2>
-            <p>
-              Para consultas, reportar problemas o solicitar la remoción de un reporte:{" "}
-              <a href="mailto:alanlenner@gmail.com" className="text-marca-azul underline">
-                alanlenner@gmail.com
-              </a>
-            </p>
-          </section>
 
           <div className="border-t border-slate-100 pt-4 text-xs text-slate-400">
-            <p>Última actualización: junio 2025</p>
+            <p>Última actualización: junio 2026</p>
           </div>
         </article>
       </div>
