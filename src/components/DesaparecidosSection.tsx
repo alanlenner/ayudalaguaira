@@ -403,8 +403,35 @@ export default function DesaparecidosSection() {
     setMostrarFormulario(true);
   };
 
+  const contadores = {
+    buscando: reportes.filter((r) => r.estado === "buscando").length,
+    encontrado_vivo: reportes.filter((r) => r.estado === "encontrado_vivo").length,
+    encontrado_fallecido: reportes.filter((r) => r.estado === "encontrado_fallecido").length,
+    hospitalizado: reportes.filter((r) => r.estado === "hospitalizado").length,
+  };
+
   return (
     <div>
+      {/* Métricas de estado */}
+      <div className="grid grid-cols-4 gap-2 mt-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 text-center">
+          <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
+          <p className="text-[10px] text-amber-600">Buscando</p>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-xl p-2 text-center">
+          <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo}</p>
+          <p className="text-[10px] text-green-600">Encontrados</p>
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-2 text-center">
+          <p className="text-lg font-bold text-gray-500">{contadores.encontrado_fallecido}</p>
+          <p className="text-[10px] text-gray-400">Fallecidos</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 text-center">
+          <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
+          <p className="text-[10px] text-blue-600">Hospitalizados</p>
+        </div>
+      </div>
+
       {/* Tabs de zona */}
       <div className="flex flex-wrap gap-2 mt-4">
         {ZONAS_FILTRO.map((z) => (
