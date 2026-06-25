@@ -308,10 +308,10 @@ export default function RecursosSection() {
 
       {/* Filtros */}
       <div className="mt-4 space-y-2">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFiltroZona("todas")}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroZona === "todas"
                 ? "bg-marca-azul text-white"
                 : "bg-white text-slate-600 border border-slate-200"
@@ -323,7 +323,7 @@ export default function RecursosSection() {
             <button
               key={z}
               onClick={() => setFiltroZona(z)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 filtroZona === z
                   ? "bg-marca-azul text-white"
                   : "bg-white text-slate-600 border border-slate-200"
@@ -333,10 +333,10 @@ export default function RecursosSection() {
             </button>
           ))}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFiltroCategoria("todas")}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroCategoria === "todas"
                 ? "bg-marca-azul/80 text-white"
                 : "bg-white text-slate-600 border border-slate-200"
@@ -348,7 +348,7 @@ export default function RecursosSection() {
             <button
               key={c.value}
               onClick={() => setFiltroCategoria(c.value)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 filtroCategoria === c.value
                   ? "bg-marca-azul/80 text-white"
                   : "bg-white text-slate-600 border border-slate-200"
