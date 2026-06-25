@@ -122,8 +122,36 @@ function TarjetaReporte({ pub, onSelect }: { pub: Reporte; onSelect: (r: Reporte
   );
 }
 
-function ModalDetalleReporte({ pub, onClose }: { pub: Reporte; onClose: () => void }) {
+function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; onClose: () => void; onActualizado?: (r: Reporte) => void }) {
   const telLimpio = limpiarTelefono(pub.telefono);
+  const [mostrarAparecio, setMostrarAparecio] = useState(false);
+  const [telVerificacion, setTelVerificacion] = useState("");
+  const [errorVerif, setErrorVerif] = useState("");
+  const [enviandoAparecio, setEnviandoAparecio] = useState(false);
+  const [exito, setExito] = useState(false);
+
+  const confirmarAparecio = async () => {
+    const ingresado = limpiarTelefono(telVerificacion);
+    const original = limpiarTelefono(pub.telefono);
+    if (ingresado.length < 7 || (!original.endsWith(ingresado.slice(-7)) && ingresado !== original)) {
+      setErrorVerif("El teléfono no coincide con el del reporte.");
+      return;
+    }
+    setEnviandoAparecio(true);
+    setErrorVerif("");
+    const { error } = await supabase
+      .from("desaparecidos")
+      .update({ estado: "encontrado_vivo" })
+      .eq("id", pub.id);
+    setEnviandoAparecio(false);
+    if (error) {
+      setErrorVerif("Error al actualizar. Intenta de nuevo.");
+      return;
+    }
+    setExito(true);
+    if (onActualizado) onActualizado({ ...pub, estado: "encontrado_vivo" });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -137,7 +165,7 @@ function ModalDetalleReporte({ pub, onClose }: { pub: Reporte; onClose: () => vo
               <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
-          <StatusBadge estado={pub.estado} />
+          <StatusBadge estado={exito ? "encontrado_vivo" : pub.estado} />
           <div className="flex flex-wrap gap-2 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-marca-azul/10 text-marca-azul rounded-full font-medium">
               <MapPin className="w-3 h-3" />
@@ -164,6 +192,54 @@ function ModalDetalleReporte({ pub, onClose }: { pub: Reporte; onClose: () => vo
               WhatsApp
             </a>
           </div>
+
+          {pub.estado === "buscando" && !exito && (
+            <>
+              {!mostrarAparecio ? (
+                <button
+                  onClick={() => setMostrarAparecio(true)}
+                  className="w-full py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-medium hover:bg-emerald-100 transition flex items-center justify-center gap-2"
+                >
+                  <Heart className="w-4 h-4" />
+                  ¡Apareció!
+                </button>
+              ) : (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                  <p className="text-xs text-emerald-700 font-medium">Para confirmar, ingresa el teléfono de contacto del reporte:</p>
+                  <input
+                    type="tel"
+                    value={telVerificacion}
+                    onChange={(e) => setTelVerificacion(e.target.value)}
+                    placeholder="Ej: 0412-1234567"
+                    className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                  {errorVerif && <p className="text-xs text-red-500">{errorVerif}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setMostrarAparecio(false); setTelVerificacion(""); setErrorVerif(""); }}
+                      className="flex-1 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50 transition"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={confirmarAparecio}
+                      disabled={enviandoAparecio || !telVerificacion.trim()}
+                      className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition flex items-center justify-center gap-1"
+                    >
+                      {enviandoAparecio ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      Confirmar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {exito && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+              <p className="text-sm text-emerald-700 font-medium">¡Registro actualizado! {pub.nombre} fue marcado/a como encontrado/a.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -537,7 +613,13 @@ export default function DesaparecidosSection() {
 
       {/* Modal detalle reporte */}
       {reporteSeleccionado && (
-        <ModalDetalleReporte pub={reporteSeleccionado} onClose={() => setReporteSeleccionado(null)} />
+        <ModalDetalleReporte
+          pub={reporteSeleccionado}
+          onClose={() => setReporteSeleccionado(null)}
+          onActualizado={(r) => {
+            setReportes((prev) => prev.map((p) => (p.id === r.id ? r : p)));
+          }}
+        />
       )}
     </div>
   );
