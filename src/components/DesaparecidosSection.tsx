@@ -50,7 +50,7 @@ interface Reporte {
   foto_url: string | null;
   ultima_ubicacion: string | null;
   descripcion: string | null;
-  estado: "buscando" | "encontrado_vivo" | "encontrado_fallecido";
+  estado: "buscando" | "encontrado_vivo" | "encontrado_fallecido" | "hospitalizado";
   created_at: string;
 }
 
@@ -77,6 +77,13 @@ function StatusBadge({ estado }: { estado: string }) {
       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-marca-verde/10 text-marca-verde rounded-full text-xs font-medium">
         <Check className="w-3 h-3" />
         Encontrado vivo
+      </span>
+    );
+  }
+  if (estado === "hospitalizado") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+        🏥 Ingresado en Hospital
       </span>
     );
   }

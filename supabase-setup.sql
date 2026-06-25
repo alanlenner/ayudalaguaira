@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS desaparecidos (
   foto_url TEXT,
   ultima_ubicacion TEXT,
   descripcion TEXT,
-  estado TEXT NOT NULL DEFAULT 'buscando' CHECK (estado IN ('buscando', 'encontrado_vivo', 'encontrado_fallecido')),
+  estado TEXT NOT NULL DEFAULT 'buscando' CHECK (estado IN ('buscando', 'encontrado_vivo', 'encontrado_fallecido', 'hospitalizado')),
   edit_token TEXT UNIQUE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -57,7 +57,7 @@ CREATE POLICY "Actualización pública" ON desaparecidos
 -- ALTER TABLE desaparecidos DROP COLUMN IF EXISTS encontrado;
 -- ALTER TABLE desaparecidos DROP CONSTRAINT IF EXISTS desaparecidos_seccion_check;
 -- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_zona_check CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño'));
--- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_estado_check CHECK (estado IN ('buscando', 'encontrado_vivo', 'encontrado_fallecido'));
+-- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_estado_check CHECK (estado IN ('buscando', 'encontrado_vivo', 'encontrado_fallecido', 'hospitalizado'));
 
 -- ============================================
 -- STORAGE: Bucket "fotos-desaparecidos"
