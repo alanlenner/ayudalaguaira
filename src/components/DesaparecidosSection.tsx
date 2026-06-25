@@ -268,22 +268,28 @@ export default function DesaparecidosSection() {
     setCopiado(true); setTimeout(() => setCopiado(false), 2000);
   };
 
+  const [mostrarConsentimiento, setMostrarConsentimiento] = useState(false);
+  const [noVolverMostrar, setNoVolverMostrar] = useState(false);
+
+  const intentarReportar = () => {
+    const yaAcepto = typeof window !== "undefined" && localStorage.getItem("consentimiento_aceptado") === "1";
+    if (yaAcepto) {
+      setMostrarFormulario(true);
+    } else {
+      setMostrarConsentimiento(true);
+    }
+  };
+
+  const aceptarConsentimiento = () => {
+    if (noVolverMostrar) {
+      localStorage.setItem("consentimiento_aceptado", "1");
+    }
+    setMostrarConsentimiento(false);
+    setMostrarFormulario(true);
+  };
+
   return (
     <div>
-      {/* Buscador */}
-      <div className="mt-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Buscar por nombre o apellido..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent" />
-        </div>
-      </div>
-
-      {/* Botón reportar */}
-      <button onClick={() => setMostrarFormulario(true)} className="w-full mt-3 bg-marca-dorado hover:opacity-90 text-white py-3.5 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-2">
-        <Heart className="w-4 h-4" />
-        Reportar a alguien que buscamos
-      </button>
-
       {/* Tabs de zona */}
       <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide">
         {ZONAS_FILTRO.map((z) => (
@@ -292,6 +298,20 @@ export default function DesaparecidosSection() {
           </button>
         ))}
       </div>
+
+      {/* Buscador */}
+      <div className="mt-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input type="text" placeholder="Buscar por nombre o apellido..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent" />
+        </div>
+      </div>
+
+      {/* Botón reportar */}
+      <button onClick={intentarReportar} className="w-full mt-3 bg-marca-dorado hover:opacity-90 text-white py-3.5 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-2">
+        <Heart className="w-4 h-4" />
+        Reportar a alguien que buscamos
+      </button>
 
       {/* Feed */}
       <div className="mt-4 pb-8 space-y-3">
@@ -316,7 +336,7 @@ export default function DesaparecidosSection() {
                   Si conoces a alguien desaparecido, sé el primero en reportarlo. Cada publicación ayuda a alguien a encontrar a su familia.
                 </p>
                 <button
-                  onClick={() => setMostrarFormulario(true)}
+                  onClick={intentarReportar}
                   className="mt-4 bg-marca-dorado hover:opacity-90 text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all inline-flex items-center gap-2"
                 >
                   <Heart className="w-4 h-4" />
@@ -434,6 +454,50 @@ export default function DesaparecidosSection() {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de consentimiento */}
+      {mostrarConsentimiento && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4">
+            <h3 className="text-lg font-medium text-slate-800">Antes de continuar</h3>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Al publicar un reporte, tu <strong>número de contacto será visible públicamente</strong> para
+              que cualquier persona con información pueda comunicarse contigo.
+            </p>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Este sitio no se hace responsable del uso que terceros hagan de esa información.
+              Lee nuestro{" "}
+              <a href="/aviso-legal" target="_blank" className="text-marca-azul underline font-medium">
+                aviso legal y política de privacidad
+              </a>{" "}
+              para más detalles.
+            </p>
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={noVolverMostrar}
+                onChange={(e) => setNoVolverMostrar(e.target.checked)}
+                className="mt-0.5 rounded border-slate-300 text-marca-azul focus:ring-marca-azul/40"
+              />
+              <span className="text-xs text-slate-400">No volver a mostrar este aviso</span>
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setMostrarConsentimiento(false)}
+                className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={aceptarConsentimiento}
+                className="flex-1 py-2.5 bg-marca-dorado text-white rounded-xl text-sm font-medium hover:opacity-90 transition"
+              >
+                Acepto, continuar
+              </button>
+            </div>
           </div>
         </div>
       )}

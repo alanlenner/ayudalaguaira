@@ -185,14 +185,14 @@ export default function EditarRegistro() {
 
   return (
     <div className="min-h-screen bg-marca-fondo">
-      <header className="bg-marca-azul text-white">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <a href="/" className="hover:bg-white/10 p-1 rounded-lg transition"><ArrowLeft className="w-5 h-5" /></a>
-          <h1 className="text-lg font-medium">{titulo}</h1>
+      <header className="bg-white border-b border-slate-200">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          <a href="/" className="hover:bg-slate-100 p-1 rounded-lg transition"><ArrowLeft className="w-5 h-5 text-slate-600" /></a>
+          <h1 className="text-base font-semibold text-slate-800">{titulo}</h1>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-3xl mx-auto px-4 py-6">
         <form onSubmit={handleSubmit} className="space-y-4">
 
           {/* ========== DESAPARECIDOS ========== */}

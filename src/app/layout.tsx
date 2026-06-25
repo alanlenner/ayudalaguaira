@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
+import { Merriweather } from 'next/font/google'
 import './globals.css'
 
+const merriweather = Merriweather({
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-serif',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Desaparecidos - Terremoto La Guaira 2025',
-  description: 'Plataforma para reportar y buscar personas desaparecidas tras el terremoto de La Guaira',
+  title: 'Venezuela unida — La Guaira',
+  description: 'Plataforma ciudadana para reconectar familias tras el terremoto de La Guaira. Reporta, busca y ayuda.',
 }
 
 export default function RootLayout({
@@ -12,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={merriweather.variable}>
       <body className="antialiased">
         {children}
       </body>
