@@ -399,9 +399,9 @@ export default function DesaparecidosSection() {
   return (
     <div>
       {/* Tabs de zona */}
-      <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex flex-wrap gap-2 mt-4">
         {ZONAS_FILTRO.map((z) => (
-          <button key={z} onClick={() => setZonaActiva(z)} className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${zonaActiva === z ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
+          <button key={z} onClick={() => setZonaActiva(z)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${zonaActiva === z ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
             {z}
           </button>
         ))}
