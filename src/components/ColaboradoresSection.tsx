@@ -133,6 +133,9 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
           <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
           <span className="line-clamp-1">{col.ubicacion}</span>
         </div>
+        {col.descripcion && (
+          <p className="text-[11px] text-slate-400 mt-1.5 line-clamp-3">{col.descripcion}</p>
+        )}
         <span className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
           <Clock className="w-2.5 h-2.5" />
           {tiempoRelativo(col.created_at)}

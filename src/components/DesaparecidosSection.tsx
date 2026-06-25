@@ -93,7 +93,9 @@ function TarjetaReporte({ pub, onSelect }: { pub: Reporte; onSelect: (r: Reporte
       className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all"
     >
       {pub.foto_url ? (
-        <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full object-contain bg-slate-100" loading="lazy" />
+        <div className="w-full aspect-[3/4] overflow-hidden bg-slate-100">
+          <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full h-full object-cover object-top" loading="lazy" />
+        </div>
       ) : (
         <div className="w-full h-28 bg-marca-fondo flex items-center justify-center">
           <User className="w-10 h-10 text-slate-300" />
@@ -156,7 +158,7 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {pub.foto_url && (
-          <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full max-h-[60vh] object-contain bg-slate-100" />
+          <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full" />
         )}
         <div className="p-5 space-y-3">
           <div className="flex items-start justify-between">
