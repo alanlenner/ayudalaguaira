@@ -2,12 +2,12 @@ export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía
 export type ZonaDB = (typeof ZONAS_DB)[number];
 
 export const TIPOS_AYUDA = [
+  { value: "salud_mental", label: "Salud mental / Psicología" },
   { value: "call_center", label: "Call center" },
   { value: "canalizar_reportes", label: "Canalizar reportes" },
   { value: "traduccion", label: "Traducción" },
   { value: "logistica_local", label: "Logística local" },
   { value: "transporte", label: "Transporte" },
-  { value: "salud_mental", label: "Salud mental / Psicología" },
   { value: "otro", label: "Otro" },
 ] as const;
 
