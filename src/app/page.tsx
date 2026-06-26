@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Search as SearchIcon, HandHeart, Brain } from "lucide-react";
+import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network } from "lucide-react";
 import DesaparecidosSection from "@/components/DesaparecidosSection";
 import ColaboradoresSection from "@/components/ColaboradoresSection";
+import HubAyudaSection from "@/components/HubAyudaSection";
+import RedAyudaSection from "@/components/RedAyudaSection";
 import Footer from "@/components/Footer";
 
-type Seccion = "desaparecidos" | "colaboradores";
+type Seccion = "desaparecidos" | "colaboradores" | "hub" | "red";
 
 const TABS: { key: Seccion; label: string; icon: React.ReactNode }[] = [
   { key: "desaparecidos", label: "Buscamos", icon: <SearchIcon className="w-4 h-4" /> },
   { key: "colaboradores", label: "Colaborar", icon: <HandHeart className="w-4 h-4" /> },
+  { key: "hub", label: "Ayuda", icon: <LifeBuoy className="w-4 h-4" /> },
+  { key: "red", label: "Red", icon: <Network className="w-4 h-4" /> },
 ];
 
 export default function Home() {
@@ -25,6 +29,11 @@ export default function Home() {
   const irARegistroPsicologo = () => {
     setSeccion("colaboradores");
     setAbrirFormulario(true);
+  };
+
+  const irAHubAyuda = () => {
+    setSeccion("hub");
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
   };
 
   return (
@@ -103,6 +112,15 @@ export default function Home() {
               Soy psicólogo y quiero ayudar
             </button>
           </div>
+          <div className="mb-8">
+            <button
+              onClick={irAHubAyuda}
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              Ver organizaciones de ayuda
+            </button>
+          </div>
 
           {/* Separador */}
           <div className="border-t border-white/10 pt-6">
@@ -120,10 +138,11 @@ export default function Home() {
       <div className="max-w-3xl mx-auto px-4">
         {seccion === "desaparecidos" && <DesaparecidosSection />}
         {seccion === "colaboradores" && <ColaboradoresSection abrirFormulario={abrirFormulario} onFormularioCerrado={() => setAbrirFormulario(false)} />}
+        {seccion === "hub" && <HubAyudaSection />}
+        {seccion === "red" && <RedAyudaSection />}
       </div>
 
-      <Footer />
+      <Footer onOpenHub={irAHubAyuda} />
     </div>
   );
 }
-
