@@ -42,6 +42,11 @@ export default function Home() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
   };
 
+  const irARedPlataformas = () => {
+    setSeccion("red");
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+  };
+
   return (
     <div className="min-h-screen bg-marca-fondo">
       {/* Top bar */}
@@ -121,13 +126,20 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <div className="mb-8">
+          <div className="mb-8 flex flex-col sm:flex-row gap-2">
             <button
               onClick={irAHubAyuda}
               className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
             >
               <LifeBuoy className="w-4 h-4" />
               Ver organizaciones de ayuda
+            </button>
+            <button
+              onClick={irARedPlataformas}
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
+            >
+              <Network className="w-4 h-4" />
+              Ver la red de plataformas de ayuda
             </button>
           </div>
 
