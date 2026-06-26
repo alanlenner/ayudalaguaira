@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy } from "lucide-react";
+import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network } from "lucide-react";
 import DesaparecidosSection from "@/components/DesaparecidosSection";
 import ColaboradoresSection from "@/components/ColaboradoresSection";
 import HubAyudaSection from "@/components/HubAyudaSection";
+import RedAyudaSection from "@/components/RedAyudaSection";
 import Footer from "@/components/Footer";
 
-type Seccion = "desaparecidos" | "colaboradores" | "hub";
+type Seccion = "desaparecidos" | "colaboradores" | "hub" | "red";
 
 const TABS: { key: Seccion; label: string; icon: React.ReactNode }[] = [
   { key: "desaparecidos", label: "Buscamos", icon: <SearchIcon className="w-4 h-4" /> },
   { key: "colaboradores", label: "Colaborar", icon: <HandHeart className="w-4 h-4" /> },
   { key: "hub", label: "Ayuda", icon: <LifeBuoy className="w-4 h-4" /> },
+  { key: "red", label: "Red", icon: <Network className="w-4 h-4" /> },
 ];
 
 export default function Home() {
@@ -131,6 +133,7 @@ export default function Home() {
         {seccion === "desaparecidos" && <DesaparecidosSection />}
         {seccion === "colaboradores" && <ColaboradoresSection />}
         {seccion === "hub" && <HubAyudaSection />}
+        {seccion === "red" && <RedAyudaSection />}
       </div>
 
       <Footer onOpenHub={irAHubAyuda} />
