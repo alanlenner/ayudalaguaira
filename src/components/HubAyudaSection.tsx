@@ -79,10 +79,11 @@ export default function HubAyudaSection() {
       <div className="grid gap-4 sm:grid-cols-2">
         {organizacionesFiltradas.map((organizacion) => {
           const categoria = CATEGORIAS[organizacion.categoria];
+          const telefonos = organizacion.telefonos ?? (organizacion.telefono ? [organizacion.telefono] : []);
 
           return (
             <article
-              key={`${organizacion.nombre}-${organizacion.url}`}
+              key={`${organizacion.nombre}-${organizacion.url ?? "sin-url"}`}
               className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-3">
@@ -98,22 +99,31 @@ export default function HubAyudaSection() {
                 {organizacion.descripcion}
               </p>
 
-              {organizacion.telefono && (
-                <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
-                  <Phone className="h-4 w-4 text-marca-azul" />
-                  <span>{organizacion.telefono}</span>
+              {telefonos.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {telefonos.map((telefono) => (
+                    <div
+                      key={`${organizacion.nombre}-${telefono}`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-slate-500"
+                    >
+                      <Phone className="h-4 w-4 text-marca-azul" />
+                      <span>{telefono}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 
-              <a
-                href={organizacion.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-marca-azul px-4 py-3 text-sm font-medium text-white transition hover:bg-marca-azul-oscuro"
-              >
-                Visitar organización
-                <ExternalLink className="h-4 w-4" />
-              </a>
+              {organizacion.url && (
+                <a
+                  href={organizacion.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-marca-azul px-4 py-3 text-sm font-medium text-white transition hover:bg-marca-azul-oscuro"
+                >
+                  Página oficial
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
             </article>
           );
         })}

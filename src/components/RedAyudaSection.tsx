@@ -6,6 +6,7 @@ type RecursoRed = {
   titulo: string;
   descripcion: string;
   url: string;
+  embebible?: boolean;
 };
 
 const RECURSOS: RecursoRed[] = [
@@ -18,6 +19,12 @@ const RECURSOS: RecursoRed[] = [
     titulo: "Desaparecidos Terremoto Venezuela",
     descripcion: "Consulta la plataforma de Desaparecidos Terremoto Venezuela directamente desde aquí.",
     url: "https://desaparecidosterremotovenezuela.com/",
+  },
+  {
+    titulo: "Hospitales en Venezuela",
+    descripcion: "Consulta la plataforma de hospitales en Venezuela directamente desde aquí.",
+    url: "https://hospitalesenvenezuela.com/",
+    embebible: false,
   },
 ];
 
@@ -52,16 +59,18 @@ export default function RedAyudaSection() {
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
-            <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
-              <iframe
-                src={recurso.url}
-                title={recurso.titulo}
-                className="w-full h-[75vh] min-h-[500px] bg-white"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              />
-            </div>
+            {recurso.embebible !== false && (
+              <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+                <iframe
+                  src={recurso.url}
+                  title={recurso.titulo}
+                  className="w-full h-[75vh] min-h-[500px] bg-white"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -6,8 +6,9 @@ export interface Organizacion {
   nombre: string;
   descripcion: string;
   categoria: CategoriaOrg;
-  url: string;
+  url?: string;
   telefono?: string;
+  telefonos?: string[];
 }
 
 const URLS_LINEAS_DIRECTAS: Record<string, string> = {
@@ -17,6 +18,36 @@ const URLS_LINEAS_DIRECTAS: Record<string, string> = {
 };
 
 export const ORGANIZACIONES: Organizacion[] = [
+  {
+    nombre: "Federación de Psicólogos de Venezuela",
+    descripcion:
+      "Federación profesional con servicios de orientación y apoyo psicológico para atención emocional.",
+    categoria: "oficial",
+    url: "https://fpv.org.ve",
+    telefonos: ["0212-4163116", "0212-4163118", "0424-2907338"],
+  },
+  {
+    nombre: "Psicólogos sin Fronteras",
+    descripcion:
+      "Red de apoyo psicológico y orientación emocional para personas que necesitan contención y escucha.",
+    categoria: "voluntariado",
+    url: "https://www.instagram.com/psfvenezuela/",
+    telefonos: ["0412-9270304"],
+  },
+  {
+    nombre: "SNC",
+    descripcion:
+      "Canal de apoyo psicoemocional compartido para contacto directo y orientación inicial.",
+    categoria: "voluntariado",
+    telefonos: ["0414-42665181"],
+  },
+  {
+    nombre: "Rehabilitarte",
+    descripcion:
+      "Contacto de acompañamiento terapéutico y atención emocional para personas afectadas.",
+    categoria: "voluntariado",
+    telefonos: ["0424-6115506"],
+  },
   {
     nombre: "CICR - Restoring Family Links",
     descripcion:
