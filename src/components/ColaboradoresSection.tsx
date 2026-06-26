@@ -31,6 +31,7 @@ interface Colaborador {
   disponibilidad: string | null;
   telefono: string | null;
   email: string | null;
+  redes: string | null;
   descripcion: string | null;
   activo: boolean;
   created_at: string;
@@ -126,6 +127,9 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
               </a>
             )}
           </div>
+          {col.redes && (
+            <p className="text-xs text-slate-500 pt-1">Redes: <a href={col.redes.startsWith("http") ? col.redes : `https://instagram.com/${col.redes.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="text-marca-azul underline">{col.redes}</a></p>
+          )}
         </div>
       </div>
     </div>
@@ -164,6 +168,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
   const [disponibilidad, setDisponibilidad] = useState("");
   const [formTelefono, setFormTelefono] = useState("");
   const [formEmail, setFormEmail] = useState("");
+  const [formRedes, setFormRedes] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
   const cargarConteos = useCallback(async () => {
@@ -188,7 +193,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
 
       let query = supabase
         .from("colaboradores")
-        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, telefono, email, descripcion, activo, created_at")
+        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, telefono, email, redes, descripcion, activo, created_at")
         .eq("activo", true);
 
       if (filtroTipo !== "todos") {
@@ -245,6 +250,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       disponibilidad: disponibilidad.trim() || null,
       telefono: formTelefono.trim() || null,
       email: formEmail.trim() || null,
+      redes: formRedes.trim() || null,
       descripcion: descripcion.trim() || null,
       edit_token,
       activo: true,
@@ -270,6 +276,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     setDisponibilidad("");
     setFormTelefono("");
     setFormEmail("");
+    setFormRedes("");
     setDescripcion("");
     setCopiado(false);
     onFormularioCerrado?.();
@@ -511,7 +518,19 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
                   />
                 </div>
-                <p className="text-xs text-slate-400">Llena al menos uno de los dos (celular o email)</p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Instagram / Facebook
+                  </label>
+                  <input
+                    type="text"
+                    value={formRedes}
+                    onChange={(e) => setFormRedes(e.target.value)}
+                    placeholder="Ej: @usuario o link de perfil"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                  />
+                </div>
+                <p className="text-xs text-slate-400">Llena al menos celular o email. Redes son opcionales.</p>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
