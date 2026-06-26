@@ -8,6 +8,7 @@ import {
   Check,
   Loader2,
   ArrowLeft,
+  Bookmark,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { comprimirImagen } from "@/lib/image-utils";
@@ -114,7 +115,9 @@ export default function EditarRegistro() {
         tipo_ayuda: tipoAyudaSeleccion,
         ubicacion: (formData.ubicacion as string || "").trim(),
         disponibilidad: (formData.disponibilidad as string || "").trim() || null,
-        contacto: (formData.contacto as string || "").trim(),
+        telefono: (formData.telefono as string || "").trim() || null,
+        email: (formData.email as string || "").trim() || null,
+        redes: (formData.redes as string || "").trim() || null,
         descripcion: (formData.descripcion as string || "").trim() || null,
         activo: formData.activo,
       };
@@ -193,6 +196,15 @@ export default function EditarRegistro() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <Bookmark className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Guarda este enlace en tus favoritos</p>
+              <p className="text-xs text-amber-700 mt-1">Este es el único lugar donde puedes modificar tu información o desactivarte. Sin este enlace no podrás hacer cambios.</p>
+            </div>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
 
           {/* ========== DESAPARECIDOS ========== */}
@@ -281,8 +293,16 @@ export default function EditarRegistro() {
                 <input type="text" value={(formData.disponibilidad as string) || ""} onChange={(e) => set("disponibilidad", e.target.value)} placeholder="Ej: fines de semana, 24/7" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Contacto *</label>
-                <input type="text" value={(formData.contacto as string) || ""} onChange={(e) => set("contacto", e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
+                <label className="block text-sm font-medium text-slate-700 mb-1">Celular</label>
+                <input type="tel" value={(formData.telefono as string) || ""} onChange={(e) => set("telefono", e.target.value)} placeholder="Ej: 04141234567" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input type="email" value={(formData.email as string) || ""} onChange={(e) => set("email", e.target.value)} placeholder="Ej: tu@correo.com" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Instagram / Facebook</label>
+                <input type="text" value={(formData.redes as string) || ""} onChange={(e) => set("redes", e.target.value)} placeholder="Ej: @usuario o link de perfil" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
