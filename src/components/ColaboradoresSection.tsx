@@ -295,7 +295,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     <div>
       {/* Métricas */}
       {!cargando && colaboradores.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mt-6 mb-5">
           <div className="bg-blue-50 border border-blue-200 rounded-xl py-3 px-4 text-center">
             <p className="text-2xl font-bold text-marca-azul tabular-nums">{colaboradoresOrdenados.length}</p>
             <p className="text-xs text-slate-600 mt-0.5">Colaboradores activos</p>
