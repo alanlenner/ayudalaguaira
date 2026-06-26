@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Search,
   Loader2,
   X,
   Check,
@@ -14,7 +13,6 @@ import {
   MapPin,
   Clock,
   HandHeart,
-  Filter,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -31,7 +29,8 @@ interface Colaborador {
   tipo_ayuda: string[];
   ubicacion: string;
   disponibilidad: string | null;
-  contacto: string;
+  telefono: string | null;
+  email: string | null;
   descripcion: string | null;
   activo: boolean;
   created_at: string;
@@ -45,80 +44,6 @@ function tipoLabel(value: string) {
 
 function logContacto(colaboradorId: string, tipo: "llamada" | "whatsapp" | "email") {
   supabase.from("contactos_log").insert({ colaborador_id: colaboradorId, tipo_contacto: tipo }).then();
-}
-
-function BotonContacto({ contacto, colaboradorId }: { contacto: string; colaboradorId: string }) {
-  const esEmail = contacto.includes("@");
-  const esTelefono = /^[0-9+\-\s()]+$/.test(contacto);
-
-  if (esEmail) {
-    return (
-      <a
-        href={`mailto:${contacto}`}
-        onClick={() => logContacto(colaboradorId, "email")}
-        className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition"
-      >
-        <Mail className="w-3.5 h-3.5" />
-        Email
-      </a>
-    );
-  }
-
-  const limpio = limpiarTelefono(contacto);
-  return (
-    <div className="flex gap-2">
-      <a
-        href={`tel:${limpio}`}
-        onClick={() => logContacto(colaboradorId, "llamada")}
-        className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition"
-      >
-        <Phone className="w-3.5 h-3.5" />
-        Llamar
-      </a>
-      {esTelefono && (
-        <a
-          href={waLink(contacto)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => logContacto(colaboradorId, "whatsapp")}
-          className="flex items-center gap-1.5 px-3 py-2 bg-marca-verde text-white rounded-full text-xs font-medium hover:opacity-90 transition"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          WhatsApp
-        </a>
-      )}
-    </div>
-  );
-}
-
-function BotonContactoCompacto({ contacto, colaboradorId }: { contacto: string; colaboradorId: string }) {
-  const esEmail = contacto.includes("@");
-  const esTelefono = /^[0-9+\-\s()]+$/.test(contacto);
-  const limpio = limpiarTelefono(contacto);
-
-  if (esEmail) {
-    return (
-      <a href={`mailto:${contacto}`} onClick={() => logContacto(colaboradorId, "email")} className="w-full flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
-        <Mail className="w-3 h-3" />
-        Email
-      </a>
-    );
-  }
-
-  return (
-    <div className="flex gap-1.5">
-      <a href={`tel:${limpio}`} onClick={() => logContacto(colaboradorId, "llamada")} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
-        <Phone className="w-3 h-3" />
-        Llamar
-      </a>
-      {esTelefono && (
-        <a href={waLink(contacto)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(colaboradorId, "whatsapp")} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-verde text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
-          <MessageCircle className="w-3 h-3" />
-          WhatsApp
-        </a>
-      )}
-    </div>
-  );
 }
 
 function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c: Colaborador) => void }) {
@@ -153,9 +78,7 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
 }
 
 function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: () => void }) {
-  const limpio = limpiarTelefono(col.contacto);
-  const esEmail = col.contacto.includes("@");
-  const esTelefono = /^[0-9+\-\s()]+$/.test(col.contacto);
+  const limpio = col.telefono ? limpiarTelefono(col.telefono) : "";
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -183,25 +106,24 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
           {col.descripcion && (
             <p className="text-sm text-slate-600">{col.descripcion}</p>
           )}
-          <div className="flex gap-2 pt-2">
-            {esEmail ? (
-              <a href={`mailto:${col.contacto}`} onClick={() => logContacto(col.id, "email")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
-                <Mail className="w-4 h-4" />
-                Email
-              </a>
-            ) : (
+          <div className="flex gap-2 pt-2 flex-wrap">
+            {col.telefono && (
               <>
                 <a href={`tel:${limpio}`} onClick={() => logContacto(col.id, "llamada")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
                   <Phone className="w-4 h-4" />
                   Llamar
                 </a>
-                {esTelefono && (
-                  <a href={waLink(col.contacto)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(col.id, "whatsapp")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                )}
+                <a href={waLink(col.telefono)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(col.id, "whatsapp")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </a>
               </>
+            )}
+            {col.email && (
+              <a href={`mailto:${col.email}`} onClick={() => logContacto(col.id, "email")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-700 text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                <Mail className="w-4 h-4" />
+                Email
+              </a>
             )}
           </div>
         </div>
@@ -240,7 +162,8 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
   const [tipoAyuda, setTipoAyuda] = useState<string[]>([]);
   const [ubicacion, setUbicacion] = useState("");
   const [disponibilidad, setDisponibilidad] = useState("");
-  const [contacto, setContacto] = useState("");
+  const [formTelefono, setFormTelefono] = useState("");
+  const [formEmail, setFormEmail] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
   const cargarConteos = useCallback(async () => {
@@ -265,7 +188,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
 
       let query = supabase
         .from("colaboradores")
-        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, contacto, descripcion, activo, created_at")
+        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, telefono, email, descripcion, activo, created_at")
         .eq("activo", true);
 
       if (filtroTipo !== "todos") {
@@ -307,8 +230,8 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre.trim() || !contacto.trim() || !ubicacion.trim() || tipoAyuda.length === 0) {
-      alert("Completa nombre, tipo de ayuda, ubicación y contacto");
+    if (!nombre.trim() || !ubicacion.trim() || tipoAyuda.length === 0 || (!formTelefono.trim() && !formEmail.trim())) {
+      alert("Completa nombre, tipo de ayuda, ubicación y al menos un contacto (celular o email)");
       return;
     }
 
@@ -320,7 +243,8 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       tipo_ayuda: tipoAyuda,
       ubicacion: ubicacion.trim(),
       disponibilidad: disponibilidad.trim() || null,
-      contacto: contacto.trim(),
+      telefono: formTelefono.trim() || null,
+      email: formEmail.trim() || null,
       descripcion: descripcion.trim() || null,
       edit_token,
       activo: true,
@@ -344,7 +268,8 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     setTipoAyuda([]);
     setUbicacion("");
     setDisponibilidad("");
-    setContacto("");
+    setFormTelefono("");
+    setFormEmail("");
     setDescripcion("");
     setCopiado(false);
     onFormularioCerrado?.();
@@ -563,17 +488,30 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Contacto <span className="text-marca-dorado">*</span>
+                    Celular
                   </label>
                   <input
-                    type="text"
-                    value={contacto}
-                    onChange={(e) => setContacto(e.target.value)}
-                    placeholder="Celular o email"
+                    type="tel"
+                    value={formTelefono}
+                    onChange={(e) => setFormTelefono(e.target.value)}
+                    placeholder="Ej: 04141234567"
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
-                    required
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    placeholder="Ej: tu@correo.com"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                  />
+                </div>
+                <p className="text-xs text-slate-400">Llena al menos uno de los dos (celular o email)</p>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
