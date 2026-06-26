@@ -20,6 +20,7 @@ const TABS: { key: Seccion; label: string; icon: React.ReactNode }[] = [
 export default function Home() {
   const [seccion, setSeccion] = useState<Seccion>("desaparecidos");
   const [abrirFormulario, setAbrirFormulario] = useState(false);
+  const [abrirReporteDesaparecido, setAbrirReporteDesaparecido] = useState(false);
 
   const irAColaboradoresSaludMental = () => {
     setSeccion("colaboradores");
@@ -29,6 +30,11 @@ export default function Home() {
   const irARegistroPsicologo = () => {
     setSeccion("colaboradores");
     setAbrirFormulario(true);
+  };
+
+  const irAReportarDesaparecido = () => {
+    setSeccion("desaparecidos");
+    setAbrirReporteDesaparecido(true);
   };
 
   const irAHubAyuda = () => {
@@ -89,28 +95,31 @@ export default function Home() {
               <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
                 Estás a salvo. Respira.
               </h2>
-              <p className="text-slate-300 text-sm leading-relaxed max-w-lg">
-                Lo que sientes es real y es válido. El miedo, la angustia, la incertidumbre — no tienes que cargar con eso solo. 
-                Hay profesionales de salud mental dispuestos a escucharte, sin costo, sin trámites. 
-                Para víctimas, familiares, voluntarios, expatriados — para todos.
-              </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 mb-8">
+          <div className="flex flex-col gap-2 mb-8">
             <button
-              onClick={irAColaboradoresSaludMental}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+              onClick={irAReportarDesaparecido}
+              className="w-full bg-marca-verde hover:opacity-90 text-white py-3 px-5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center"
             >
-              <Heart className="w-4 h-4" />
-              Necesito apoyo emocional
+              + Reportar a alguien
             </button>
-            <button
-              onClick={irARegistroPsicologo}
-              className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
-            >
-              <HandHeart className="w-4 h-4" />
-              Soy psicólogo y quiero ayudar
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={irARegistroPsicologo}
+                className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <HandHeart className="w-4 h-4" />
+                Soy psicólogo y quiero ayudar
+              </button>
+              <button
+                onClick={irAColaboradoresSaludMental}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <Heart className="w-4 h-4" />
+                Necesito apoyo emocional
+              </button>
+            </div>
           </div>
           <div className="mb-8">
             <button
@@ -136,7 +145,12 @@ export default function Home() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4">
-        {seccion === "desaparecidos" && <DesaparecidosSection />}
+        {seccion === "desaparecidos" && (
+          <DesaparecidosSection
+            abrirFormulario={abrirReporteDesaparecido}
+            onFormularioCerrado={() => setAbrirReporteDesaparecido(false)}
+          />
+        )}
         {seccion === "colaboradores" && <ColaboradoresSection abrirFormulario={abrirFormulario} onFormularioCerrado={() => setAbrirFormulario(false)} />}
         {seccion === "hub" && <HubAyudaSection />}
         {seccion === "red" && <RedAyudaSection />}

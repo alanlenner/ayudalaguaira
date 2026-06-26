@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS desaparecidos (
   id BIGSERIAL PRIMARY KEY,
   nombre TEXT NOT NULL,
   apellido TEXT NOT NULL,
-  zona TEXT NOT NULL CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani')),
+  zona TEXT NOT NULL CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani', 'Otro')),
   telefono TEXT NOT NULL,
   foto_url TEXT,
   ultima_ubicacion TEXT,
@@ -56,7 +56,8 @@ CREATE POLICY "Actualización pública" ON desaparecidos
 -- ALTER TABLE desaparecidos DROP COLUMN IF EXISTS edad;
 -- ALTER TABLE desaparecidos DROP COLUMN IF EXISTS encontrado;
 -- ALTER TABLE desaparecidos DROP CONSTRAINT IF EXISTS desaparecidos_seccion_check;
--- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_zona_check CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani'));
+-- ALTER TABLE desaparecidos DROP CONSTRAINT IF EXISTS desaparecidos_zona_check;
+-- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_zona_check CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani', 'Otro'));
 -- ALTER TABLE desaparecidos ADD CONSTRAINT desaparecidos_estado_check CHECK (estado IN ('buscando', 'encontrado_vivo', 'encontrado_fallecido', 'hospitalizado'));
 
 -- ============================================
@@ -104,7 +105,7 @@ CREATE TABLE IF NOT EXISTS recursos (
   categoria TEXT NOT NULL CHECK (categoria IN ('alimentos', 'agua', 'insumos_medicos', 'medicamentos', 'ropa_abrigo', 'refugio_temporal', 'otro')),
   descripcion TEXT NOT NULL,
   direccion TEXT NOT NULL,
-  zona TEXT NOT NULL CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani')),
+  zona TEXT NOT NULL CHECK (zona IN ('Naiguatá', 'Caraballeda', 'Catia La Mar', 'Maiquetía', 'Tanaguarena', 'Macuto', 'Hospital Pérez Carreño', 'Domingo Luciani', 'Otro')),
   celular_contacto TEXT NOT NULL,
   estado TEXT NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'resuelto')),
   edit_token TEXT UNIQUE NOT NULL,

@@ -1,4 +1,4 @@
-export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Hospital Pérez Carreño", "Domingo Luciani"] as const;
+export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Hospital Pérez Carreño", "Domingo Luciani", "Otro"] as const;
 export type ZonaDB = (typeof ZONAS_DB)[number];
 
 export const TIPOS_AYUDA = [
@@ -32,6 +32,39 @@ export function generarToken() {
 
 export function limpiarTelefono(tel: string) {
   return tel.replace(/[^0-9+]/g, "");
+}
+
+export type ValidacionTelefono =
+  | { valido: true; telefonoNormalizado: string }
+  | { valido: false; motivo: "codigo_pais" | "longitud_minima"; mensaje: string; telefonoNormalizado: string };
+
+export function validarTelefono(tel: string): ValidacionTelefono {
+  const telefonoNormalizado = limpiarTelefono(tel);
+  const soloDigitos = telefonoNormalizado.replace(/\D/g, "");
+  const tieneCodigoPaisExplicito = telefonoNormalizado.startsWith("+") || soloDigitos.startsWith("58");
+
+  if (!tieneCodigoPaisExplicito) {
+    return {
+      valido: false,
+      motivo: "codigo_pais",
+      mensaje: "Indica el código de país, por ejemplo +58.",
+      telefonoNormalizado,
+    };
+  }
+
+  if (soloDigitos.length < 11) {
+    return {
+      valido: false,
+      motivo: "longitud_minima",
+      mensaje: "Faltan dígitos en el celular de contacto.",
+      telefonoNormalizado,
+    };
+  }
+
+  return {
+    valido: true,
+    telefonoNormalizado,
+  };
 }
 
 export function tiempoRelativo(fecha: string) {

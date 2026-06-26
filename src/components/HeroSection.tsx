@@ -1,7 +1,5 @@
 "use client";
 
-import { Heart } from "lucide-react";
-
 interface HeroSectionProps {
   onReportar: () => void;
 }
@@ -35,7 +33,6 @@ export default function HeroSection({ onReportar }: HeroSectionProps) {
         onClick={onReportar}
         className="bg-marca-dorado hover:opacity-90 text-white py-3.5 px-8 rounded-2xl font-medium text-sm transition-all inline-flex items-center gap-2"
       >
-        <Heart className="w-4 h-4" />
         Reportar a alguien que buscamos
       </button>
 

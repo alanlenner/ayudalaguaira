@@ -25,6 +25,7 @@ import {
   generarToken,
   tiempoRelativo,
   limpiarTelefono,
+  validarTelefono,
   waLink,
 } from "@/lib/constants";
 
@@ -40,6 +41,7 @@ const HASHTAGS: Record<ZonaDB, string> = {
   "Macuto": "#MacutoDesaparecidos",
   "Hospital Pérez Carreño": "#PerezCarrenoDesaparecidos",
   "Domingo Luciani": "#DomingoLucianiDesaparecidos",
+  "Otro": "#OtroDesaparecidos",
 };
 
 interface Reporte {
@@ -62,7 +64,23 @@ interface Duplicado {
   zona: string;
 }
 
+interface DesaparecidosSectionProps {
+  abrirFormulario?: boolean;
+  onFormularioCerrado?: () => void;
+}
+
 const PAGE_SIZE = 20;
+const REPORTE_BORRADOR_KEY = "reporte_borrador";
+
+interface ReporteBorrador {
+  nombre: string;
+  apellido: string;
+  zona: ZonaDB;
+  telefono: string;
+  ultimaUbicacion: string;
+  descripcion: string;
+  estado: "buscando" | "encontrado_vivo" | "encontrado_fallecido";
+}
 
 function StatusBadge({ estado }: { estado: string }) {
   if (estado === "buscando") {
@@ -276,23 +294,25 @@ function TwitterZona({ zona }: { zona: ZonaDB }) {
   );
 }
 
-export default function DesaparecidosSection() {
+export default function DesaparecidosSection({ abrirFormulario, onFormularioCerrado }: DesaparecidosSectionProps) {
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [zonaActiva, setZonaActiva] = useState<Zona>("Todas");
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [cargando, setCargando] = useState(true);
-  const [cargandoMas, setCargandoMas] = useState(false);
-  const [hayMas, setHayMas] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [borradorPendiente, setBorradorPendiente] = useState<ReporteBorrador | null>(null);
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [zona, setZona] = useState<ZonaDB>("Naiguatá");
   const [telefono, setTelefono] = useState("");
+  const [telefonoTocado, setTelefonoTocado] = useState(false);
   const [ultimaUbicacion, setUltimaUbicacion] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [estado, setEstado] = useState<"buscando" | "encontrado_vivo" | "encontrado_fallecido">("buscando");
@@ -302,18 +322,19 @@ export default function DesaparecidosSection() {
   const [duplicados, setDuplicados] = useState<Duplicado[]>([]);
   const dupTimeout = useRef<NodeJS.Timeout | null>(null);
   const [contadores, setContadores] = useState({ buscando: 0, encontrado_vivo: 0, encontrado_fallecido: 0, hospitalizado: 0 });
-  const reportesRef = useRef<Reporte[]>([]);
-  reportesRef.current = reportes;
+  const zonaEsOtro = zona === "Otro";
+  const telefonoValidacion = telefono.trim() ? validarTelefono(telefono) : null;
+  const telefonoError =
+    telefonoTocado && telefonoValidacion && !telefonoValidacion.valido
+      ? telefonoValidacion.mensaje
+      : "";
 
   const cargarReportes = useCallback(
-    async (reset = true) => {
-      if (reset) setCargando(true);
-      else setCargandoMas(true);
-
-      const currentLength = reset ? 0 : reportesRef.current.length;
+    async () => {
+      setCargando(true);
       let query = supabase
         .from("desaparecidos")
-        .select("id, nombre, apellido, zona, telefono, foto_url, ultima_ubicacion, descripcion, estado, created_at");
+        .select("id, nombre, apellido, zona, telefono, foto_url, ultima_ubicacion, descripcion, estado, created_at", { count: "exact" });
       if (busqueda.trim()) {
         const b = `%${busqueda.trim()}%`;
         query = query.or(`nombre.ilike.${b},apellido.ilike.${b}`);
@@ -327,24 +348,23 @@ export default function DesaparecidosSection() {
           query = query.eq("estado", filtroEstado);
         }
       }
-      const { data } = await query.order("created_at", { ascending: false }).range(currentLength, currentLength + PAGE_SIZE - 1);
+      const from = (paginaActual - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, count } = await query.order("created_at", { ascending: false }).range(from, to);
       if (data) {
-        const typed = data as Reporte[];
-        if (reset) setReportes(typed);
-        else setReportes((prev) => {
-          const ids = new Set(prev.map((p) => p.id));
-          const nuevos = typed.filter((t) => !ids.has(t.id));
-          return [...prev, ...nuevos];
-        });
-        setHayMas(typed.length === PAGE_SIZE);
+        setReportes(data as Reporte[]);
       }
+      setTotalPaginas(Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE)));
       setCargando(false);
-      setCargandoMas(false);
     },
-    [zonaActiva, busqueda, filtroEstado]
+    [zonaActiva, busqueda, filtroEstado, paginaActual]
   );
 
-  useEffect(() => { cargarReportes(true); }, [cargarReportes]);
+  useEffect(() => { cargarReportes(); }, [cargarReportes]);
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [zonaActiva, filtroEstado, busqueda]);
 
   useEffect(() => {
     const fetchContadores = async () => {
@@ -358,6 +378,68 @@ export default function DesaparecidosSection() {
     };
     fetchContadores();
   }, [reportes]);
+
+  useEffect(() => {
+    if (!mostrarFormulario || tokenGenerado || typeof window === "undefined") {
+      return;
+    }
+
+    const borradorActual: ReporteBorrador = {
+      nombre,
+      apellido,
+      zona,
+      telefono,
+      ultimaUbicacion,
+      descripcion,
+      estado,
+    };
+    const tieneContenido =
+      nombre.trim().length > 0 ||
+      apellido.trim().length > 0 ||
+      telefono.trim().length > 0 ||
+      ultimaUbicacion.trim().length > 0 ||
+      descripcion.trim().length > 0;
+
+    if (!tieneContenido) {
+      return;
+    }
+
+    localStorage.setItem(REPORTE_BORRADOR_KEY, JSON.stringify(borradorActual));
+  }, [mostrarFormulario, tokenGenerado, nombre, apellido, zona, telefono, ultimaUbicacion, descripcion, estado]);
+
+  useEffect(() => {
+    if (!mostrarFormulario || tokenGenerado || typeof window === "undefined") {
+      return;
+    }
+
+    const borradorGuardado = localStorage.getItem(REPORTE_BORRADOR_KEY);
+    if (!borradorGuardado) {
+      setBorradorPendiente(null);
+      return;
+    }
+
+    try {
+      const borrador = JSON.parse(borradorGuardado) as Partial<ReporteBorrador>;
+      if (
+        typeof borrador.nombre !== "string" ||
+        typeof borrador.apellido !== "string" ||
+        typeof borrador.zona !== "string" ||
+        typeof borrador.telefono !== "string" ||
+        typeof borrador.ultimaUbicacion !== "string" ||
+        typeof borrador.descripcion !== "string" ||
+        typeof borrador.estado !== "string"
+      ) {
+        localStorage.removeItem(REPORTE_BORRADOR_KEY);
+        setBorradorPendiente(null);
+        return;
+      }
+
+      setBorradorPendiente(borrador as ReporteBorrador);
+    } catch {
+      localStorage.removeItem(REPORTE_BORRADOR_KEY);
+      setBorradorPendiente(null);
+    }
+  }, [mostrarFormulario, tokenGenerado]);
 
   const buscarDuplicados = (nom: string, ape: string) => {
     if (dupTimeout.current) clearTimeout(dupTimeout.current);
@@ -379,9 +461,25 @@ export default function DesaparecidosSection() {
     reader.readAsDataURL(file);
   };
 
+  const eliminarFoto = () => {
+    setFotoFile(null);
+    setFotoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTelefonoTocado(true);
     if (!nombre.trim() || !apellido.trim() || !telefono.trim()) { alert("Completa nombre, apellido y teléfono"); return; }
+    if (!telefonoValidacion || !telefonoValidacion.valido) {
+      return;
+    }
+    if (zonaEsOtro && !ultimaUbicacion.trim()) {
+      alert("Indica la ubicación para la zona 'Otro'.");
+      return;
+    }
     setEnviando(true);
     let foto_url: string | null = null;
     if (fotoFile) {
@@ -395,15 +493,40 @@ export default function DesaparecidosSection() {
       } catch { alert("Error al procesar la imagen"); setEnviando(false); return; }
     }
     const edit_token = generarToken();
-    const { error } = await supabase.from("desaparecidos").insert({ nombre: nombre.trim(), apellido: apellido.trim(), zona, telefono: telefono.trim(), foto_url, ultima_ubicacion: ultimaUbicacion.trim() || null, descripcion: descripcion.trim() || null, estado, edit_token });
+    const { error } = await supabase.from("desaparecidos").insert({ nombre: nombre.trim(), apellido: apellido.trim(), zona, telefono: telefonoValidacion.telefonoNormalizado, foto_url, ultima_ubicacion: ultimaUbicacion.trim() || null, descripcion: descripcion.trim() || null, estado, edit_token });
     if (error) { alert("Error al publicar: " + error.message); setEnviando(false); return; }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(REPORTE_BORRADOR_KEY);
+    }
     setEnviando(false);
     setTokenGenerado(edit_token);
-    cargarReportes(true);
+    setPaginaActual(1);
+    cargarReportes();
   };
 
   const cerrarFormulario = () => {
-    setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setTelefono(""); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setCopiado(false);
+    setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setTelefono(""); setTelefonoTocado(false); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setCopiado(false); setBorradorPendiente(null);
+    onFormularioCerrado?.();
+  };
+
+  const restaurarBorrador = () => {
+    if (!borradorPendiente) return;
+    setNombre(borradorPendiente.nombre);
+    setApellido(borradorPendiente.apellido);
+    setZona(borradorPendiente.zona);
+    setTelefono(borradorPendiente.telefono);
+    setTelefonoTocado(false);
+    setUltimaUbicacion(borradorPendiente.ultimaUbicacion);
+    setDescripcion(borradorPendiente.descripcion);
+    setEstado(borradorPendiente.estado);
+    setBorradorPendiente(null);
+  };
+
+  const descartarBorrador = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(REPORTE_BORRADOR_KEY);
+    }
+    setBorradorPendiente(null);
   };
 
   const copiarLink = () => {
@@ -432,6 +555,12 @@ export default function DesaparecidosSection() {
     setMostrarConsentimiento(false);
     setMostrarFormulario(true);
   };
+
+  useEffect(() => {
+    if (abrirFormulario) {
+      intentarReportar();
+    }
+  }, [abrirFormulario]);
 
 
   return (
@@ -532,10 +661,28 @@ export default function DesaparecidosSection() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {reportes.map((r) => (<TarjetaReporte key={r.id} pub={r} onSelect={setReporteSeleccionado} />))}
             </div>
-            {hayMas && (
-              <button onClick={() => cargarReportes(false)} disabled={cargandoMas} className="w-full mt-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
-                {cargandoMas ? <><Loader2 className="w-4 h-4 animate-spin" /> Cargando...</> : "Cargar más reportes"}
-              </button>
+            {totalPaginas > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                  disabled={paginaActual === 1}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Anterior
+                </button>
+                <p className="text-center text-xs text-slate-500">
+                  Página {paginaActual} de {totalPaginas}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                  disabled={paginaActual === totalPaginas}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Siguiente
+                </button>
+              </div>
             )}
           </>
         )}
@@ -571,14 +718,39 @@ export default function DesaparecidosSection() {
                 </div>
                 <button onClick={cerrarFormulario} className="w-full bg-slate-900 text-white py-3 rounded-xl font-medium">Cerrar</button>
               </div>
+            ) : borradorPendiente ? (
+              <div className="p-6 space-y-4">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+                  <h3 className="text-base font-medium text-amber-900">Tienes un borrador guardado</h3>
+                  <p className="text-sm text-amber-800">
+                    Puedes continuar con los datos guardados o descartarlos y empezar de nuevo.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={descartarBorrador}
+                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  >
+                    Descartar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={restaurarBorrador}
+                    className="flex-1 rounded-xl bg-marca-dorado px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nombre <span className="text-marca-dorado">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nombre <span className="text-red-500">*</span></label>
                   <input type="text" value={nombre} onChange={(e) => { setNombre(e.target.value); buscarDuplicados(e.target.value, apellido); }} placeholder="Nombre" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Apellido <span className="text-marca-dorado">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Apellido <span className="text-red-500">*</span></label>
                   <input type="text" value={apellido} onChange={(e) => { setApellido(e.target.value); buscarDuplicados(nombre, e.target.value); }} placeholder="Apellido" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
                 </div>
                 {duplicados.length > 0 && (
@@ -593,23 +765,57 @@ export default function DesaparecidosSection() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Zona <span className="text-marca-dorado">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Zona <span className="text-red-500">*</span></label>
                   <select value={zona} onChange={(e) => setZona(e.target.value as ZonaDB)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 bg-white" required>
                     {ZONAS_DB.map((z) => (<option key={z} value={z}>{z}</option>))}
                   </select>
                 </div>
+                {zonaEsOtro && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ubicación <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={ultimaUbicacion}
+                      onChange={(e) => setUltimaUbicacion(e.target.value)}
+                      placeholder="Ej: Urbanización, calle, sector o referencia"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                      required
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Se guardará como última ubicación conocida para poder ubicar mejor el reporte.
+                    </p>
+                  </div>
+                )}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Celular de contacto <span className="text-marca-dorado">*</span></label>
-                  <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="0412-1234567" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Celular de contacto <span className="text-red-500">*</span></label>
+                  <input
+                    type="tel"
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)}
+                    onBlur={() => setTelefonoTocado(true)}
+                    placeholder="+58 412-1234567"
+                    className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${telefonoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"}`}
+                    required
+                  />
+                  {telefonoError && <p className="mt-1 text-xs text-red-600">{telefonoError}</p>}
                 </div>
-                <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-marca-azul/40 hover:bg-marca-azul/5 transition">
+                <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-marca-azul/40 hover:bg-marca-azul/5 transition">
                   {fotoPreview ? (
-                    <div className="flex items-center gap-3">
-                      <img src={fotoPreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
-                      <p className="text-sm text-slate-500">Toca para cambiar</p>
+                    <div className="space-y-3">
+                      <div onClick={() => fileInputRef.current?.click()} className="flex items-center gap-3 cursor-pointer">
+                        <img src={fotoPreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
+                        <p className="text-sm text-slate-500 text-left">Toca para cambiar</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={eliminarFoto}
+                        className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                      >
+                        Eliminar foto
+                      </button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-2">
+                    <div onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 cursor-pointer">
                       <Camera className="w-5 h-5 text-slate-400" />
                       <span className="text-sm text-slate-500">Subir foto (opcional)</span>
                     </div>
@@ -617,8 +823,16 @@ export default function DesaparecidosSection() {
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFoto} className="hidden" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Última ubicación conocida</label>
-                  <input type="text" value={ultimaUbicacion} onChange={(e) => setUltimaUbicacion(e.target.value)} placeholder="Ej: Calle principal de Naiguatá" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {zonaEsOtro ? "Detalles adicionales de ubicación" : "Última ubicación conocida"}
+                  </label>
+                  <input
+                    type="text"
+                    value={ultimaUbicacion}
+                    onChange={(e) => setUltimaUbicacion(e.target.value)}
+                    placeholder={zonaEsOtro ? "Ej: edificio, piso, punto de referencia" : "Ej: Calle principal de Naiguatá"}
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Descripción adicional</label>
@@ -669,7 +883,10 @@ export default function DesaparecidosSection() {
             </label>
             <div className="flex gap-3">
               <button
-                onClick={() => setMostrarConsentimiento(false)}
+                onClick={() => {
+                  setMostrarConsentimiento(false);
+                  onFormularioCerrado?.();
+                }}
                 className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >
                 Cancelar

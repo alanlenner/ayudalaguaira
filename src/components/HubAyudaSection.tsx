@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ExternalLink, Filter, Phone } from "lucide-react";
 import { ORGANIZACIONES, type CategoriaOrg } from "@/lib/organizaciones";
+import { limpiarTelefono } from "@/lib/constants";
 
 const CATEGORIAS: Record<CategoriaOrg, { label: string; className: string }> = {
   reconexion: {
@@ -102,13 +103,14 @@ export default function HubAyudaSection() {
               {telefonos.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {telefonos.map((telefono) => (
-                    <div
+                    <a
                       key={`${organizacion.nombre}-${telefono}`}
-                      className="inline-flex items-center gap-2 text-sm font-medium text-slate-500"
+                      href={`tel:${limpiarTelefono(telefono)}`}
+                      className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-marca-azul"
                     >
                       <Phone className="h-4 w-4 text-marca-azul" />
                       <span>{telefono}</span>
-                    </div>
+                    </a>
                   ))}
                 </div>
               )}
