@@ -3,7 +3,11 @@
 import { Heart } from "lucide-react";
 import TelefonosEmergencia from "./TelefonosEmergencia";
 
-export default function Footer() {
+type FooterProps = {
+  onOpenHub: () => void;
+};
+
+export default function Footer({ onOpenHub }: FooterProps) {
   return (
     <footer className="bg-marca-azul-oscuro text-white mt-8">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
@@ -38,7 +42,17 @@ export default function Footer() {
             antes de compartirse.
           </p>
 
-          <div className="flex items-center justify-center text-xs text-white/35">
+          <div className="flex items-center justify-center gap-3 text-xs text-white/35">
+            <button
+              type="button"
+              onClick={onOpenHub}
+              className="hover:text-white/60 transition underline"
+            >
+              Organizaciones de ayuda
+            </button>
+            <span aria-hidden="true" className="text-white/20">
+              /
+            </span>
             <a href="/aviso-legal" className="hover:text-white/60 transition underline">
               Aviso legal
             </a>
