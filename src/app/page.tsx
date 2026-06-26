@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Search as SearchIcon, HandHeart, Package, Brain } from "lucide-react";
+import { Heart, Search as SearchIcon, HandHeart, Brain } from "lucide-react";
 import DesaparecidosSection from "@/components/DesaparecidosSection";
 import ColaboradoresSection from "@/components/ColaboradoresSection";
-import RecursosSection from "@/components/RecursosSection";
 import Footer from "@/components/Footer";
 
-type Seccion = "desaparecidos" | "colaboradores" | "recursos";
+type Seccion = "desaparecidos" | "colaboradores";
 
 const TABS: { key: Seccion; label: string; icon: React.ReactNode }[] = [
   { key: "desaparecidos", label: "Buscamos", icon: <SearchIcon className="w-4 h-4" /> },
   { key: "colaboradores", label: "Colaborar", icon: <HandHeart className="w-4 h-4" /> },
-  { key: "recursos", label: "Recursos", icon: <Package className="w-4 h-4" /> },
 ];
 
 export default function Home() {
@@ -116,7 +114,6 @@ export default function Home() {
       <div className="max-w-3xl mx-auto px-4">
         {seccion === "desaparecidos" && <DesaparecidosSection />}
         {seccion === "colaboradores" && <ColaboradoresSection />}
-        {seccion === "recursos" && <RecursosSection />}
       </div>
 
       <Footer />
