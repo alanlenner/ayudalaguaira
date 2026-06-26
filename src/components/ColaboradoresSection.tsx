@@ -289,8 +289,19 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     setTimeout(() => setCopiado(false), 2000);
   };
 
+  const totalContactos = Object.values(conteos).reduce((a, b) => a + b, 0);
+
   return (
     <div>
+      {/* Métricas */}
+      <div className="flex items-baseline gap-1 flex-wrap text-sm text-slate-500 mb-3 leading-relaxed">
+        <span className="text-purple-600 font-semibold tabular-nums">{colaboradores.length > 0 ? colaboradoresOrdenados.length : 0}</span>
+        <span>{colaboradoresOrdenados.length === 1 ? "colaborador activo" : "colaboradores activos"}</span>
+        <span className="text-slate-300 mx-0.5">·</span>
+        <span className="text-marca-verde font-semibold tabular-nums">{totalContactos}</span>
+        <span>{totalContactos === 1 ? "contacto realizado" : "contactos realizados"}</span>
+      </div>
+
       {/* Botón principal */}
       <button
         onClick={() => setMostrarFormulario(true)}
