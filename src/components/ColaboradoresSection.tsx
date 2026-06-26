@@ -147,8 +147,9 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [conteos, setConteos] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
-  const [cargandoMas, setCargandoMas] = useState(false);
-  const [hayMas, setHayMas] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalColaboradores, setTotalColaboradores] = useState(0);
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
   const [orden, setOrden] = useState<Orden>("menos_contactados");
   const [seleccionado, setSeleccionado] = useState<Colaborador | null>(null);
@@ -185,41 +186,41 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
   }, []);
 
   const cargar = useCallback(
-    async (reset = true) => {
-      if (reset) setCargando(true);
-      else setCargandoMas(true);
-
-      const offset = reset ? 0 : colaboradores.length;
-
+    async () => {
+      setCargando(true);
       let query = supabase
         .from("colaboradores")
-        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, telefono, email, redes, descripcion, activo, created_at")
+        .select("id, nombre, tipo_ayuda, ubicacion, disponibilidad, telefono, email, redes, descripcion, activo, created_at", { count: "exact" })
         .eq("activo", true);
 
       if (filtroTipo !== "todos") {
         query = query.contains("tipo_ayuda", [filtroTipo]);
       }
 
-      const { data } = await query
+      const from = (paginaActual - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { data, count } = await query
         .order("created_at", { ascending: false })
-        .range(offset, offset + PAGE_SIZE - 1);
+        .range(from, to);
 
       if (data) {
-        const typed = data as Colaborador[];
-        if (reset) setColaboradores(typed);
-        else setColaboradores((prev) => [...prev, ...typed]);
-        setHayMas(typed.length === PAGE_SIZE);
+        setColaboradores(data as Colaborador[]);
       }
+      setTotalColaboradores(count ?? 0);
+      setTotalPaginas(Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE)));
       setCargando(false);
-      setCargandoMas(false);
     },
-    [filtroTipo]
+    [filtroTipo, paginaActual]
   );
 
   useEffect(() => {
-    cargar(true);
+    cargar();
+  }, [cargar]);
+
+  useEffect(() => {
     cargarConteos();
-  }, [cargar, cargarConteos]);
+  }, [cargarConteos]);
 
   const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
     const ca = conteos[a.id] || 0;
@@ -264,7 +265,11 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
 
     setEnviando(false);
     setTokenGenerado(edit_token);
-    cargar(true);
+    if (paginaActual === 1) {
+      cargar();
+    } else {
+      setPaginaActual(1);
+    }
   };
 
   const cerrarFormulario = () => {
@@ -297,7 +302,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       {!cargando && colaboradores.length > 0 && (
         <div className="grid grid-cols-2 gap-3 mt-6 mb-5">
           <div className="bg-blue-50 border border-blue-200 rounded-xl py-3 px-4 text-center">
-            <p className="text-2xl font-bold text-marca-azul tabular-nums">{colaboradoresOrdenados.length}</p>
+            <p className="text-2xl font-bold text-marca-azul tabular-nums">{totalColaboradores}</p>
             <p className="text-xs text-slate-600 mt-0.5">Colaboradores activos</p>
           </div>
           <div className="bg-green-50 border border-green-200 rounded-xl py-3 px-4 text-center">
@@ -329,7 +334,10 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       {/* Filtro por tipo */}
       <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
         <button
-          onClick={() => setFiltroTipo("todos")}
+          onClick={() => {
+            setFiltroTipo("todos");
+            setPaginaActual(1);
+          }}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
             filtroTipo === "todos"
               ? "bg-marca-azul text-white"
@@ -341,7 +349,10 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
         {TIPOS_AYUDA.map((t) => (
           <button
             key={t.value}
-            onClick={() => setFiltroTipo(t.value)}
+            onClick={() => {
+              setFiltroTipo(t.value);
+              setPaginaActual(1);
+            }}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroTipo === t.value
                 ? "bg-marca-azul text-white"
@@ -379,18 +390,28 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
                 <TarjetaColaborador key={c.id} col={c} onSelect={setSeleccionado} />
               ))}
             </div>
-            {hayMas && (
-              <button
-                onClick={() => cargar(false)}
-                disabled={cargandoMas}
-                className="w-full mt-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2"
-              >
-                {cargandoMas ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Cargando...</>
-                ) : (
-                  "Cargar más"
-                )}
-              </button>
+            {totalPaginas > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                  disabled={paginaActual === 1}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Anterior
+                </button>
+                <p className="text-center text-xs text-slate-500">
+                  Página {paginaActual} de {totalPaginas}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                  disabled={paginaActual === totalPaginas}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Siguiente
+                </button>
+              </div>
             )}
           </>
         )}
