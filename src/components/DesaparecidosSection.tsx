@@ -321,7 +321,11 @@ export default function DesaparecidosSection() {
         query = query.eq("zona", zonaActiva);
       }
       if (filtroEstado) {
-        query = query.eq("estado", filtroEstado);
+        if (filtroEstado === "encontrado_vivo") {
+          query = query.in("estado", ["encontrado_vivo", "encontrado_fallecido"]);
+        } else {
+          query = query.eq("estado", filtroEstado);
+        }
       }
       const { data } = await query.order("created_at", { ascending: false }).range(currentLength, currentLength + PAGE_SIZE - 1);
       if (data) {
@@ -440,7 +444,7 @@ export default function DesaparecidosSection() {
           <p className="text-[10px] text-amber-600">Buscando</p>
         </button>
         <button onClick={() => setFiltroEstado(filtroEstado === "encontrado_vivo" ? null : "encontrado_vivo")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrado_vivo" ? "ring-2 ring-green-400 bg-green-100 border border-green-300" : "bg-green-50 border border-green-200"}`}>
-          <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo}</p>
+          <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo + contadores.encontrado_fallecido}</p>
           <p className="text-[10px] text-green-600">Encontrados</p>
         </button>
         <button onClick={() => setFiltroEstado(filtroEstado === "hospitalizado" ? null : "hospitalizado")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-blue-400 bg-blue-100 border border-blue-300" : "bg-blue-50 border border-blue-200"}`}>
