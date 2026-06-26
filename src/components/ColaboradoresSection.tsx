@@ -43,7 +43,11 @@ function tipoLabel(value: string) {
   return TIPOS_AYUDA.find((t) => t.value === value)?.label || value;
 }
 
-function BotonContacto({ contacto }: { contacto: string }) {
+function logContacto(colaboradorId: string, tipo: "llamada" | "whatsapp" | "email") {
+  supabase.from("contactos_log").insert({ colaborador_id: colaboradorId, tipo_contacto: tipo }).then();
+}
+
+function BotonContacto({ contacto, colaboradorId }: { contacto: string; colaboradorId: string }) {
   const esEmail = contacto.includes("@");
   const esTelefono = /^[0-9+\-\s()]+$/.test(contacto);
 
@@ -51,6 +55,7 @@ function BotonContacto({ contacto }: { contacto: string }) {
     return (
       <a
         href={`mailto:${contacto}`}
+        onClick={() => logContacto(colaboradorId, "email")}
         className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition"
       >
         <Mail className="w-3.5 h-3.5" />
@@ -64,6 +69,7 @@ function BotonContacto({ contacto }: { contacto: string }) {
     <div className="flex gap-2">
       <a
         href={`tel:${limpio}`}
+        onClick={() => logContacto(colaboradorId, "llamada")}
         className="flex items-center gap-1.5 px-3 py-2 bg-marca-azul text-white rounded-full text-xs font-medium hover:opacity-90 transition"
       >
         <Phone className="w-3.5 h-3.5" />
@@ -74,6 +80,7 @@ function BotonContacto({ contacto }: { contacto: string }) {
           href={waLink(contacto)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => logContacto(colaboradorId, "whatsapp")}
           className="flex items-center gap-1.5 px-3 py-2 bg-marca-verde text-white rounded-full text-xs font-medium hover:opacity-90 transition"
         >
           <MessageCircle className="w-3.5 h-3.5" />
@@ -84,14 +91,14 @@ function BotonContacto({ contacto }: { contacto: string }) {
   );
 }
 
-function BotonContactoCompacto({ contacto }: { contacto: string }) {
+function BotonContactoCompacto({ contacto, colaboradorId }: { contacto: string; colaboradorId: string }) {
   const esEmail = contacto.includes("@");
   const esTelefono = /^[0-9+\-\s()]+$/.test(contacto);
   const limpio = limpiarTelefono(contacto);
 
   if (esEmail) {
     return (
-      <a href={`mailto:${contacto}`} className="w-full flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
+      <a href={`mailto:${contacto}`} onClick={() => logContacto(colaboradorId, "email")} className="w-full flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
         <Mail className="w-3 h-3" />
         Email
       </a>
@@ -100,12 +107,12 @@ function BotonContactoCompacto({ contacto }: { contacto: string }) {
 
   return (
     <div className="flex gap-1.5">
-      <a href={`tel:${limpio}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
+      <a href={`tel:${limpio}`} onClick={() => logContacto(colaboradorId, "llamada")} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-azul text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
         <Phone className="w-3 h-3" />
         Llamar
       </a>
       {esTelefono && (
-        <a href={waLink(contacto)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-verde text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
+        <a href={waLink(contacto)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(colaboradorId, "whatsapp")} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-marca-verde text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition">
           <MessageCircle className="w-3 h-3" />
           WhatsApp
         </a>
@@ -178,18 +185,18 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
           )}
           <div className="flex gap-2 pt-2">
             {esEmail ? (
-              <a href={`mailto:${col.contacto}`} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+              <a href={`mailto:${col.contacto}`} onClick={() => logContacto(col.id, "email")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
                 <Mail className="w-4 h-4" />
                 Email
               </a>
             ) : (
               <>
-                <a href={`tel:${limpio}`} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                <a href={`tel:${limpio}`} onClick={() => logContacto(col.id, "llamada")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
                   <Phone className="w-4 h-4" />
                   Llamar
                 </a>
                 {esTelefono && (
-                  <a href={waLink(col.contacto)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                  <a href={waLink(col.contacto)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(col.id, "whatsapp")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
                     <MessageCircle className="w-4 h-4" />
                     WhatsApp
                   </a>
