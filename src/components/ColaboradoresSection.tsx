@@ -212,7 +212,12 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
 
 type Orden = "menos_contactados" | "mas_contactados";
 
-export default function ColaboradoresSection() {
+interface ColaboradoresProps {
+  abrirFormulario?: boolean;
+  onFormularioCerrado?: () => void;
+}
+
+export default function ColaboradoresSection({ abrirFormulario, onFormularioCerrado }: ColaboradoresProps) {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [conteos, setConteos] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
@@ -222,6 +227,10 @@ export default function ColaboradoresSection() {
   const [orden, setOrden] = useState<Orden>("menos_contactados");
   const [seleccionado, setSeleccionado] = useState<Colaborador | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  useEffect(() => {
+    if (abrirFormulario) setMostrarFormulario(true);
+  }, [abrirFormulario]);
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -338,6 +347,7 @@ export default function ColaboradoresSection() {
     setContacto("");
     setDescripcion("");
     setCopiado(false);
+    onFormularioCerrado?.();
   };
 
   const copiarLink = () => {

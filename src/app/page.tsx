@@ -15,10 +15,16 @@ const TABS: { key: Seccion; label: string; icon: React.ReactNode }[] = [
 
 export default function Home() {
   const [seccion, setSeccion] = useState<Seccion>("desaparecidos");
+  const [abrirFormulario, setAbrirFormulario] = useState(false);
 
   const irAColaboradoresSaludMental = () => {
     setSeccion("colaboradores");
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+  };
+
+  const irARegistroPsicologo = () => {
+    setSeccion("colaboradores");
+    setAbrirFormulario(true);
   };
 
   return (
@@ -90,7 +96,7 @@ export default function Home() {
               Necesito apoyo emocional
             </button>
             <button
-              onClick={irAColaboradoresSaludMental}
+              onClick={irARegistroPsicologo}
               className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
             >
               <HandHeart className="w-4 h-4" />
@@ -113,7 +119,7 @@ export default function Home() {
 
       <div className="max-w-3xl mx-auto px-4">
         {seccion === "desaparecidos" && <DesaparecidosSection />}
-        {seccion === "colaboradores" && <ColaboradoresSection />}
+        {seccion === "colaboradores" && <ColaboradoresSection abrirFormulario={abrirFormulario} onFormularioCerrado={() => setAbrirFormulario(false)} />}
       </div>
 
       <Footer />
