@@ -210,12 +210,16 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
   );
 }
 
+type Orden = "menos_contactados" | "mas_contactados";
+
 export default function ColaboradoresSection() {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
+  const [conteos, setConteos] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [hayMas, setHayMas] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
+  const [orden, setOrden] = useState<Orden>("menos_contactados");
   const [seleccionado, setSeleccionado] = useState<Colaborador | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -229,6 +233,19 @@ export default function ColaboradoresSection() {
   const [disponibilidad, setDisponibilidad] = useState("");
   const [contacto, setContacto] = useState("");
   const [descripcion, setDescripcion] = useState("");
+
+  const cargarConteos = useCallback(async () => {
+    const { data } = await supabase
+      .from("contactos_log")
+      .select("colaborador_id");
+    if (data) {
+      const map: Record<string, number> = {};
+      data.forEach((row: { colaborador_id: string }) => {
+        map[row.colaborador_id] = (map[row.colaborador_id] || 0) + 1;
+      });
+      setConteos(map);
+    }
+  }, []);
 
   const cargar = useCallback(
     async (reset = true) => {
@@ -264,7 +281,14 @@ export default function ColaboradoresSection() {
 
   useEffect(() => {
     cargar(true);
-  }, [cargar]);
+    cargarConteos();
+  }, [cargar, cargarConteos]);
+
+  const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
+    const ca = conteos[a.id] || 0;
+    const cb = conteos[b.id] || 0;
+    return orden === "menos_contactados" ? ca - cb : cb - ca;
+  });
 
   const toggleTipoAyuda = (val: string) => {
     setTipoAyuda((prev) =>
@@ -334,8 +358,18 @@ export default function ColaboradoresSection() {
         Quiero ayudar
       </button>
 
+      {/* Orden */}
+      <div className="flex gap-2 mt-4">
+        <button
+          onClick={() => setOrden(orden === "menos_contactados" ? "mas_contactados" : "menos_contactados")}
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-all"
+        >
+          {orden === "menos_contactados" ? "Ver más contactados" : "Ver menos contactados"}
+        </button>
+      </div>
+
       {/* Filtro por tipo */}
-      <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
         <button
           onClick={() => setFiltroTipo("todos")}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -383,7 +417,7 @@ export default function ColaboradoresSection() {
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {colaboradores.map((c) => (
+              {colaboradoresOrdenados.map((c) => (
                 <TarjetaColaborador key={c.id} col={c} onSelect={setSeleccionado} />
               ))}
             </div>
