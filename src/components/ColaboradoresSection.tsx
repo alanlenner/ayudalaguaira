@@ -399,13 +399,14 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
                   <Check className="w-8 h-8 text-marca-verde" />
                 </div>
                 <h3 className="text-lg font-medium text-slate-800">¡Gracias por ofrecer tu ayuda!</h3>
+                <p className="text-sm text-slate-600">Te estamos redirigiendo a tu página de edición. <strong>Guárdala en favoritos</strong> — es el único lugar donde podrás modificar tu información o desactivarte.</p>
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
                   <div className="flex items-start gap-2">
                     <Link2 className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Guarda este enlace</p>
+                      <p className="text-sm font-medium text-amber-800">Guarda este enlace como favorito ⭐</p>
                       <p className="text-xs text-amber-700 mt-1">
-                        Úsalo para editar tu perfil o desactivarte cuando ya no puedas ayudar.
+                        Este es tu enlace personal. Sin él no podrás editar tu perfil.
                       </p>
                     </div>
                   </div>
@@ -424,7 +425,13 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
                     </button>
                   </div>
                 </div>
-                <button onClick={cerrarFormulario} className="w-full bg-slate-900 text-white py-3 rounded-xl font-medium">
+                <a
+                  href={`/editar/${tokenGenerado}`}
+                  className="w-full bg-marca-azul text-white py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2"
+                >
+                  Ir a mi página de edición
+                </a>
+                <button onClick={cerrarFormulario} className="w-full text-slate-400 text-sm py-2 hover:text-slate-600 transition">
                   Cerrar
                 </button>
               </div>
