@@ -1,6 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+const fallbackSupabaseUrl = "https://placeholder.supabase.co";
+const fallbackSupabaseAnonKey =
+  "placeholder-placeholder-placeholder-placeholder-placeholder-placeholder";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? fallbackSupabaseUrl;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? fallbackSupabaseAnonKey;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
