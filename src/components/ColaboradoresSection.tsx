@@ -295,12 +295,15 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     <div>
       {/* Métricas */}
       {!cargando && colaboradores.length > 0 && (
-        <div className="flex items-baseline gap-1 flex-wrap text-sm text-slate-500 mb-5 leading-relaxed">
-          <span className="text-marca-azul font-semibold tabular-nums">{colaboradoresOrdenados.length}</span>
-          <span>{colaboradoresOrdenados.length === 1 ? "colaborador activo" : "colaboradores activos"}</span>
-          <span className="text-slate-300 mx-0.5">·</span>
-          <span className="text-marca-verde font-semibold tabular-nums">{totalContactos}</span>
-          <span>{totalContactos === 1 ? "contacto realizado" : "contactos realizados"}</span>
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl py-3 px-4 text-center">
+            <p className="text-2xl font-bold text-marca-azul tabular-nums">{colaboradoresOrdenados.length}</p>
+            <p className="text-xs text-slate-600 mt-0.5">Colaboradores activos</p>
+          </div>
+          <div className="bg-green-50 border border-green-200 rounded-xl py-3 px-4 text-center">
+            <p className="text-2xl font-bold text-marca-verde tabular-nums">{totalContactos}</p>
+            <p className="text-xs text-slate-600 mt-0.5">Contactos realizados</p>
+          </div>
         </div>
       )}
 
