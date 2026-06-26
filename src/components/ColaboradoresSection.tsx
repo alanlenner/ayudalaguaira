@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Loader2,
   X,
@@ -22,6 +23,7 @@ import {
   limpiarTelefono,
   waLink,
 } from "@/lib/constants";
+import { buildUrlWithUpdatedQuery } from "@/lib/url-filters";
 
 interface Colaborador {
   id: string;
@@ -141,17 +143,28 @@ type Orden = "menos_contactados" | "mas_contactados";
 interface ColaboradoresProps {
   abrirFormulario?: boolean;
   onFormularioCerrado?: () => void;
+  filtros?: {
+    tipo: string;
+    orden: Orden;
+    pagina: number;
+  };
 }
 
-export default function ColaboradoresSection({ abrirFormulario, onFormularioCerrado }: ColaboradoresProps) {
+export default function ColaboradoresSection({
+  abrirFormulario,
+  onFormularioCerrado,
+  filtros,
+}: ColaboradoresProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const filtroTipo = filtros?.tipo ?? "todos";
+  const orden = filtros?.orden ?? "menos_contactados";
+  const paginaActual = filtros?.pagina ?? 1;
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [conteos, setConteos] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(true);
-  const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalColaboradores, setTotalColaboradores] = useState(0);
-  const [filtroTipo, setFiltroTipo] = useState<string>("todos");
-  const [orden, setOrden] = useState<Orden>("menos_contactados");
   const [seleccionado, setSeleccionado] = useState<Colaborador | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
@@ -222,6 +235,14 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     cargarConteos();
   }, [cargarConteos]);
 
+  const actualizarFiltros = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      const url = buildUrlWithUpdatedQuery(pathname, window.location.search, updates);
+      router.replace(url, { scroll: false });
+    },
+    [pathname, router]
+  );
+
   const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
     const ca = conteos[a.id] || 0;
     const cb = conteos[b.id] || 0;
@@ -268,7 +289,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
     if (paginaActual === 1) {
       cargar();
     } else {
-      setPaginaActual(1);
+      actualizarFiltros({ pagina: null });
     }
   };
 
@@ -324,7 +345,11 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       {/* Orden */}
       <div className="flex gap-2 mt-4">
         <button
-          onClick={() => setOrden(orden === "menos_contactados" ? "mas_contactados" : "menos_contactados")}
+          onClick={() =>
+            actualizarFiltros({
+              orden: orden === "menos_contactados" ? "mas_contactados" : null,
+            })
+          }
           className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-all"
         >
           {orden === "menos_contactados" ? "Ver más contactados" : "Ver menos contactados"}
@@ -334,10 +359,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
       {/* Filtro por tipo */}
       <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
         <button
-          onClick={() => {
-            setFiltroTipo("todos");
-            setPaginaActual(1);
-          }}
+          onClick={() => actualizarFiltros({ tipo: null, pagina: null })}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
             filtroTipo === "todos"
               ? "bg-marca-azul text-white"
@@ -349,10 +371,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
         {TIPOS_AYUDA.map((t) => (
           <button
             key={t.value}
-            onClick={() => {
-              setFiltroTipo(t.value);
-              setPaginaActual(1);
-            }}
+            onClick={() => actualizarFiltros({ tipo: t.value, pagina: null })}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               filtroTipo === t.value
                 ? "bg-marca-azul text-white"
@@ -394,7 +413,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
               <div className="mt-4 flex items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                  onClick={() => actualizarFiltros({ pagina: paginaActual - 1 === 1 ? null : paginaActual - 1 })}
                   disabled={paginaActual === 1}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -405,7 +424,7 @@ export default function ColaboradoresSection({ abrirFormulario, onFormularioCerr
                 </p>
                 <button
                   type="button"
-                  onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                  onClick={() => actualizarFiltros({ pagina: Math.min(totalPaginas, paginaActual + 1) })}
                   disabled={paginaActual === totalPaginas}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >

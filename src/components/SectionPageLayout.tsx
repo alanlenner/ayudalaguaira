@@ -1,0 +1,132 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network } from "lucide-react";
+import Footer from "./Footer";
+
+type Seccion = "desaparecidos" | "colaboradores" | "ayuda" | "red";
+
+const TABS: Array<{ key: Seccion; label: string; href: string; icon: ReactNode }> = [
+  { key: "desaparecidos", label: "Buscamos", href: "/desaparecidos", icon: <SearchIcon className="w-4 h-4" /> },
+  { key: "colaboradores", label: "Colaborar", href: "/colaboradores", icon: <HandHeart className="w-4 h-4" /> },
+  { key: "ayuda", label: "Ayuda", href: "/ayuda", icon: <LifeBuoy className="w-4 h-4" /> },
+  { key: "red", label: "Red", href: "/red", icon: <Network className="w-4 h-4" /> },
+];
+
+type SectionPageLayoutProps = {
+  currentSection: Seccion;
+  children: ReactNode;
+};
+
+export default function SectionPageLayout({ currentSection, children }: SectionPageLayoutProps) {
+  return (
+    <div className="min-h-screen bg-marca-fondo">
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+        <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center justify-between">
+          <Link href="/desaparecidos" className="flex items-center gap-2">
+            <Heart className="w-4 h-4 text-marca-azul flex-shrink-0" />
+            <span className="text-sm font-semibold text-slate-800">Venezuela unida — La Guaira</span>
+          </Link>
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            Sismo 24 jun
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-3xl mx-auto px-4">
+          <nav className="flex" aria-label="Secciones principales">
+            {TABS.map((tab) => (
+              <Link
+                key={tab.key}
+                href={tab.href}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium transition-all relative ${
+                  currentSection === tab.key
+                    ? "text-marca-azul"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+                {currentSection === tab.key && (
+                  <div className="absolute bottom-0 left-4 right-4 h-[2.5px] bg-marca-azul rounded-t-full" />
+                )}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white">
+        <div className="max-w-3xl mx-auto px-4 pt-8 pb-8">
+          <div className="flex items-start gap-3 mb-6">
+            <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Brain className="w-5 h-5 text-blue-300" />
+            </div>
+            <div>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
+                Estás a salvo. Respira.
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 mb-8">
+            <Link
+              href="/desaparecidos?reportar=1"
+              className="w-full bg-marca-verde hover:opacity-90 text-white py-3 px-5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center"
+            >
+              + Reportar a alguien
+            </Link>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Link
+                href="/colaboradores?registro=1"
+                className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <HandHeart className="w-4 h-4" />
+                Soy psicólogo y quiero ayudar
+              </Link>
+              <Link
+                href="/colaboradores"
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <Heart className="w-4 h-4" />
+                Necesito apoyo emocional
+              </Link>
+            </div>
+          </div>
+
+          <div className="mb-8 flex flex-col sm:flex-row gap-2">
+            <Link
+              href="/ayuda"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              Ver organizaciones de ayuda
+            </Link>
+            <Link
+              href="/red"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
+            >
+              <Network className="w-4 h-4" />
+              Ver la red de plataformas de ayuda
+            </Link>
+          </div>
+
+          <div className="border-t border-white/10 pt-6">
+            <h3 className="font-serif text-lg sm:text-xl font-bold leading-[1.2] mb-2">
+              Ninguna familia debería buscar sola
+            </h3>
+            <p className="text-slate-400 text-xs leading-relaxed max-w-lg">
+              Publica el nombre de quien buscas, la zona y un teléfono de contacto.
+              No hay trámites — el reporte queda visible de inmediato.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {children}
+
+      <Footer ayudaHref="/ayuda" reportarHref="/desaparecidos?reportar=1" />
+    </div>
+  );
+}

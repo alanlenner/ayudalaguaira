@@ -1,13 +1,13 @@
-"use client";
-
+import Link from "next/link";
 import { Heart } from "lucide-react";
 import TelefonosEmergencia from "./TelefonosEmergencia";
 
 type FooterProps = {
-  onOpenHub: () => void;
+  ayudaHref: string;
+  reportarHref: string;
 };
 
-export default function Footer({ onOpenHub }: FooterProps) {
+export default function Footer({ ayudaHref, reportarHref }: FooterProps) {
   return (
     <footer className="bg-marca-azul-oscuro text-white mt-8">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
@@ -16,17 +16,13 @@ export default function Footer({ onOpenHub }: FooterProps) {
 
         {/* CTA */}
         <div className="text-center">
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
+          <Link
+            href={reportarHref}
             className="bg-marca-dorado hover:opacity-90 text-white py-3 px-8 rounded-2xl font-medium text-sm transition-all inline-flex items-center gap-2"
           >
             <Heart className="w-4 h-4" />
             Reportar a alguien
-          </a>
+          </Link>
         </div>
 
         {/* Site info & disclaimer */}
@@ -43,19 +39,15 @@ export default function Footer({ onOpenHub }: FooterProps) {
           </p>
 
           <div className="flex items-center justify-center gap-3 text-xs text-white/35">
-            <button
-              type="button"
-              onClick={onOpenHub}
-              className="hover:text-white/60 transition underline"
-            >
+            <Link href={ayudaHref} className="hover:text-white/60 transition underline">
               Organizaciones de ayuda
-            </button>
+            </Link>
             <span aria-hidden="true" className="text-white/20">
               /
             </span>
-            <a href="/aviso-legal" className="hover:text-white/60 transition underline">
+            <Link href="/aviso-legal" className="hover:text-white/60 transition underline">
               Aviso legal
-            </a>
+            </Link>
           </div>
         </div>
       </div>

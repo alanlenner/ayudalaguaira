@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search,
   MapPin,
@@ -28,6 +29,7 @@ import {
   validarTelefono,
   waLink,
 } from "@/lib/constants";
+import { buildUrlWithUpdatedQuery } from "@/lib/url-filters";
 
 const ZONAS_FILTRO = ["Todas", ...ZONAS_DB] as const;
 type Zona = (typeof ZONAS_FILTRO)[number];
@@ -67,6 +69,12 @@ interface Duplicado {
 interface DesaparecidosSectionProps {
   abrirFormulario?: boolean;
   onFormularioCerrado?: () => void;
+  filtros?: {
+    zona: Zona;
+    busqueda: string;
+    estado: FiltroEstado | null;
+    pagina: number;
+  };
 }
 
 const PAGE_SIZE = 20;
@@ -81,6 +89,8 @@ interface ReporteBorrador {
   descripcion: string;
   estado: "buscando" | "encontrado_vivo" | "encontrado_fallecido";
 }
+
+type FiltroEstado = "buscando" | "encontrados" | "hospitalizado";
 
 function StatusBadge({ estado }: { estado: string }) {
   if (estado === "buscando") {
@@ -294,14 +304,21 @@ function TwitterZona({ zona }: { zona: ZonaDB }) {
   );
 }
 
-export default function DesaparecidosSection({ abrirFormulario, onFormularioCerrado }: DesaparecidosSectionProps) {
+export default function DesaparecidosSection({
+  abrirFormulario,
+  onFormularioCerrado,
+  filtros,
+}: DesaparecidosSectionProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const zonaActiva = filtros?.zona ?? "Todas";
+  const busqueda = filtros?.busqueda ?? "";
+  const filtroEstado = filtros?.estado ?? null;
+  const paginaActual = filtros?.pagina ?? 1;
   const [reportes, setReportes] = useState<Reporte[]>([]);
-  const [zonaActiva, setZonaActiva] = useState<Zona>("Todas");
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
+  const [busquedaInput, setBusquedaInput] = useState(busqueda);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [cargando, setCargando] = useState(true);
-  const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
@@ -329,6 +346,10 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
       ? telefonoValidacion.mensaje
       : "";
 
+  useEffect(() => {
+    setBusquedaInput(busqueda);
+  }, [busqueda]);
+
   const cargarReportes = useCallback(
     async () => {
       setCargando(true);
@@ -342,7 +363,7 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
         query = query.eq("zona", zonaActiva);
       }
       if (filtroEstado) {
-        if (filtroEstado === "encontrado_vivo") {
+        if (filtroEstado === "encontrados") {
           query = query.in("estado", ["encontrado_vivo", "encontrado_fallecido"]);
         } else {
           query = query.eq("estado", filtroEstado);
@@ -361,10 +382,6 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
   );
 
   useEffect(() => { cargarReportes(); }, [cargarReportes]);
-
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [zonaActiva, filtroEstado, busqueda]);
 
   useEffect(() => {
     const fetchContadores = async () => {
@@ -500,8 +517,11 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
     }
     setEnviando(false);
     setTokenGenerado(edit_token);
-    setPaginaActual(1);
-    cargarReportes();
+    if (paginaActual === 1) {
+      cargarReportes();
+    } else {
+      actualizarFiltros({ pagina: null });
+    }
   };
 
   const cerrarFormulario = () => {
@@ -534,6 +554,14 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
     navigator.clipboard.writeText(`${window.location.origin}/editar/${tokenGenerado}`);
     setCopiado(true); setTimeout(() => setCopiado(false), 2000);
   };
+
+  const actualizarFiltros = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      const url = buildUrlWithUpdatedQuery(pathname, window.location.search, updates);
+      router.replace(url, { scroll: false });
+    },
+    [pathname, router]
+  );
 
   const [reporteSeleccionado, setReporteSeleccionado] = useState<Reporte | null>(null);
   const [mostrarConsentimiento, setMostrarConsentimiento] = useState(false);
@@ -568,28 +596,30 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
       {/* Métricas de estado */}
       <p className="text-xs text-slate-500 mt-4 mb-1">Toque un recuadro para filtrar por estado. Toque de nuevo para quitar el filtro.</p>
       <div className="grid grid-cols-3 gap-2">
-        <button onClick={() => setFiltroEstado(filtroEstado === "buscando" ? null : "buscando")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-amber-400 bg-amber-100 border border-amber-300" : "bg-amber-50 border border-amber-200"}`}>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "buscando" ? null : "buscando", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-amber-400 bg-amber-100 border border-amber-300" : "bg-amber-50 border border-amber-200"}`}>
           <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
           <p className="text-[10px] text-amber-600">Buscando</p>
         </button>
-        <button onClick={() => setFiltroEstado(filtroEstado === "encontrado_vivo" ? null : "encontrado_vivo")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrado_vivo" ? "ring-2 ring-green-400 bg-green-100 border border-green-300" : "bg-green-50 border border-green-200"}`}>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "encontrados" ? null : "encontrados", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrados" ? "ring-2 ring-green-400 bg-green-100 border border-green-300" : "bg-green-50 border border-green-200"}`}>
           <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo + contadores.encontrado_fallecido}</p>
           <p className="text-[10px] text-green-600">Encontrados</p>
         </button>
-        <button onClick={() => setFiltroEstado(filtroEstado === "hospitalizado" ? null : "hospitalizado")} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-blue-400 bg-blue-100 border border-blue-300" : "bg-blue-50 border border-blue-200"}`}>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "hospitalizado" ? null : "hospitalizado", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-blue-400 bg-blue-100 border border-blue-300" : "bg-blue-50 border border-blue-200"}`}>
           <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
           <p className="text-[10px] text-blue-600">Hospitalizados</p>
         </button>
       </div>
 
       {/* Filtro activo indicador */}
-      {(filtroEstado || zonaActiva !== "Todas") && (
+      {(filtroEstado || zonaActiva !== "Todas" || busqueda) && (
         <div className="mt-2 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600">
-          Filtrando por: {filtroEstado && <strong>{filtroEstado === "buscando" ? "Buscando" : filtroEstado === "encontrado_vivo" ? "Encontrados" : "Hospitalizados"}</strong>}
-          {filtroEstado && zonaActiva !== "Todas" && " + "}
+          Filtrando por: {filtroEstado && <strong>{filtroEstado === "buscando" ? "Buscando" : filtroEstado === "encontrados" ? "Encontrados" : "Hospitalizados"}</strong>}
+          {filtroEstado && (zonaActiva !== "Todas" || busqueda) && " + "}
           {zonaActiva !== "Todas" && <strong>{zonaActiva}</strong>}
+          {zonaActiva !== "Todas" && busqueda && " + "}
+          {busqueda && <strong>Búsqueda: "{busqueda}"</strong>}
           {" — "}
-          <button onClick={() => { setFiltroEstado(null); setZonaActiva("Todas"); }} className="underline text-marca-azul font-medium">Quitar filtros</button>
+          <button onClick={() => { setBusquedaInput(""); actualizarFiltros({ estado: null, zona: null, q: null, pagina: null }); }} className="underline text-marca-azul font-medium">Quitar filtros</button>
         </div>
       )}
 
@@ -597,7 +627,7 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
       <p className="text-xs text-slate-500 mt-3 mb-1">Seleccione una zona para ver solo esa localidad:</p>
       <div className="flex flex-wrap gap-2">
         {ZONAS_FILTRO.map((z) => (
-          <button key={z} onClick={() => setZonaActiva(z)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${zonaActiva === z ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
+          <button key={z} onClick={() => actualizarFiltros({ zona: z === "Todas" ? null : z, pagina: null })} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${zonaActiva === z ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
             {z}
           </button>
         ))}
@@ -607,7 +637,7 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
       <div className="mt-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Buscar por nombre o apellido..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent" />
+          <input type="text" placeholder="Buscar por nombre o apellido..." value={busquedaInput} onChange={(e) => { const value = e.target.value; setBusquedaInput(value); actualizarFiltros({ q: value.trim() || null, pagina: null }); }} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent" />
         </div>
       </div>
 
@@ -665,7 +695,7 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
               <div className="mt-4 flex items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                  onClick={() => actualizarFiltros({ pagina: paginaActual - 1 === 1 ? null : paginaActual - 1 })}
                   disabled={paginaActual === 1}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -676,7 +706,7 @@ export default function DesaparecidosSection({ abrirFormulario, onFormularioCerr
                 </p>
                 <button
                   type="button"
-                  onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                  onClick={() => actualizarFiltros({ pagina: Math.min(totalPaginas, paginaActual + 1) })}
                   disabled={paginaActual === totalPaginas}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >

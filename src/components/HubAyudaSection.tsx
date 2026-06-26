@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { ExternalLink, Filter, Phone } from "lucide-react";
 import { ORGANIZACIONES, type CategoriaOrg } from "@/lib/organizaciones";
 import { limpiarTelefono } from "@/lib/constants";
+import { buildUrlWithUpdatedQuery } from "@/lib/url-filters";
 
 const CATEGORIAS: Record<CategoriaOrg, { label: string; className: string }> = {
   reconexion: {
@@ -32,12 +33,27 @@ const OPCIONES_FILTRO: Array<{ value: "todas" | CategoriaOrg; label: string }> =
   })),
 ];
 
-export default function HubAyudaSection() {
-  const [categoriaActiva, setCategoriaActiva] = useState<"todas" | CategoriaOrg>("todas");
+interface HubAyudaSectionProps {
+  categoriaActiva?: "todas" | CategoriaOrg;
+}
+
+export default function HubAyudaSection({ categoriaActiva = "todas" }: HubAyudaSectionProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const organizacionesFiltradas =
     categoriaActiva === "todas"
       ? ORGANIZACIONES
       : ORGANIZACIONES.filter((organizacion) => organizacion.categoria === categoriaActiva);
+
+  const actualizarCategoria = (categoria: "todas" | CategoriaOrg) => {
+    const url = buildUrlWithUpdatedQuery(
+      pathname,
+      window.location.search,
+      { categoria: categoria === "todas" ? null : categoria }
+    );
+
+    router.replace(url, { scroll: false });
+  };
 
   return (
     <section className="w-full max-w-3xl mx-auto px-4 py-8 sm:px-6">
@@ -64,7 +80,7 @@ export default function HubAyudaSection() {
             <button
               key={opcion.value}
               type="button"
-              onClick={() => setCategoriaActiva(opcion.value)}
+              onClick={() => actualizarCategoria(opcion.value)}
               className={`flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                 categoriaActiva === opcion.value
                   ? "border-marca-azul bg-marca-azul text-white"
