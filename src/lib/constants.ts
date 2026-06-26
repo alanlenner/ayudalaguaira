@@ -7,6 +7,7 @@ export const TIPOS_AYUDA = [
   { value: "traduccion", label: "Traducción" },
   { value: "logistica_local", label: "Logística local" },
   { value: "transporte", label: "Transporte" },
+  { value: "salud_mental", label: "Salud mental / Psicología" },
   { value: "otro", label: "Otro" },
 ] as const;
 
