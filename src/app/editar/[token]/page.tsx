@@ -31,6 +31,7 @@ export default function EditarRegistro() {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [contactoError, setContactoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Colaboradores: tipo_ayuda multi-select
@@ -110,13 +111,21 @@ export default function EditarRegistro() {
         estado: formData.estado,
       };
     } else if (tipo === "colaboradores") {
+      const telefono = (formData.telefono as string || "").trim();
+      const email = (formData.email as string || "").trim();
+      if (!telefono && !email) {
+        setContactoError("Debes dejar al menos un dato de contacto: celular o email.");
+        setGuardando(false);
+        return;
+      }
+      setContactoError(null);
       updatePayload = {
         nombre: (formData.nombre as string || "").trim(),
         tipo_ayuda: tipoAyudaSeleccion,
         ubicacion: (formData.ubicacion as string || "").trim(),
         disponibilidad: (formData.disponibilidad as string || "").trim() || null,
-        telefono: (formData.telefono as string || "").trim() || null,
-        email: (formData.email as string || "").trim() || null,
+        telefono: telefono || null,
+        email: email || null,
         redes: (formData.redes as string || "").trim() || null,
         descripcion: (formData.descripcion as string || "").trim() || null,
         activo: formData.activo,
@@ -294,12 +303,39 @@ export default function EditarRegistro() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Celular</label>
-                <input type="tel" value={(formData.telefono as string) || ""} onChange={(e) => set("telefono", e.target.value)} placeholder="Ej: 04141234567" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                <input
+                  type="tel"
+                  value={(formData.telefono as string) || ""}
+                  onChange={(e) => {
+                    set("telefono", e.target.value);
+                    if (e.target.value.trim() || ((formData.email as string) || "").trim()) setContactoError(null);
+                  }}
+                  placeholder="Ej: 04141234567"
+                  aria-invalid={contactoError ? "true" : "false"}
+                  className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${
+                    contactoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"
+                  }`}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input type="email" value={(formData.email as string) || ""} onChange={(e) => set("email", e.target.value)} placeholder="Ej: tu@correo.com" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                <input
+                  type="email"
+                  value={(formData.email as string) || ""}
+                  onChange={(e) => {
+                    set("email", e.target.value);
+                    if (e.target.value.trim() || ((formData.telefono as string) || "").trim()) setContactoError(null);
+                  }}
+                  placeholder="Ej: tu@correo.com"
+                  aria-invalid={contactoError ? "true" : "false"}
+                  className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${
+                    contactoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"
+                  }`}
+                />
               </div>
+              <p className={`text-xs ${contactoError ? "text-red-600" : "text-slate-400"}`}>
+                {contactoError || "Debes mantener al menos un dato de contacto visible: celular o email."}
+              </p>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Instagram / Facebook</label>
                 <input type="text" value={(formData.redes as string) || ""} onChange={(e) => set("redes", e.target.value)} placeholder="Ej: @usuario o link de perfil" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />

@@ -308,55 +308,61 @@ export default function RecursosSection() {
 
       {/* Filtros */}
       <div className="mt-4 space-y-2">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFiltroZona("todas")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              filtroZona === "todas"
-                ? "bg-marca-azul text-white"
-                : "bg-white text-slate-600 border border-slate-200"
-            }`}
-          >
-            Todas las zonas
-          </button>
-          {ZONAS_DB.map((z) => (
+        <div className="relative">
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-slate-50 to-transparent" />
+          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 pr-8 scrollbar-hide">
             <button
-              key={z}
-              onClick={() => setFiltroZona(z)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                filtroZona === z
+              onClick={() => setFiltroZona("todas")}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filtroZona === "todas"
                   ? "bg-marca-azul text-white"
                   : "bg-white text-slate-600 border border-slate-200"
               }`}
             >
-              {z}
+              Todas las zonas
             </button>
-          ))}
+            {ZONAS_DB.map((z) => (
+              <button
+                key={z}
+                onClick={() => setFiltroZona(z)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  filtroZona === z
+                    ? "bg-marca-azul text-white"
+                    : "bg-white text-slate-600 border border-slate-200"
+                }`}
+              >
+                {z}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFiltroCategoria("todas")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              filtroCategoria === "todas"
-                ? "bg-marca-azul/80 text-white"
-                : "bg-white text-slate-600 border border-slate-200"
-            }`}
-          >
-            Todas
-          </button>
-          {CATEGORIAS_RECURSO.map((c) => (
+        <div className="relative">
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-slate-50 to-transparent" />
+          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 pr-8 scrollbar-hide">
             <button
-              key={c.value}
-              onClick={() => setFiltroCategoria(c.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                filtroCategoria === c.value
+              onClick={() => setFiltroCategoria("todas")}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filtroCategoria === "todas"
                   ? "bg-marca-azul/80 text-white"
                   : "bg-white text-slate-600 border border-slate-200"
               }`}
             >
-              {c.icon} {c.label}
+              Todas
             </button>
-          ))}
+            {CATEGORIAS_RECURSO.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => setFiltroCategoria(c.value)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  filtroCategoria === c.value
+                    ? "bg-marca-azul/80 text-white"
+                    : "bg-white text-slate-600 border border-slate-200"
+                }`}
+              >
+                {c.icon} {c.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

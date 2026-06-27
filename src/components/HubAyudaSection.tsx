@@ -55,6 +55,14 @@ export default function HubAyudaSection({ categoriaActiva = "todas" }: HubAyudaS
     router.replace(url, { scroll: false });
   };
 
+  const labelAccion = (url: string) => {
+    if (url.includes("wa.me") || url.includes("whatsapp.com")) {
+      return "Abrir WhatsApp";
+    }
+
+    return "Página oficial";
+  };
+
   return (
     <section className="w-full max-w-3xl mx-auto px-4 py-8 sm:px-6">
       <div className="mb-6">
@@ -138,7 +146,7 @@ export default function HubAyudaSection({ categoriaActiva = "todas" }: HubAyudaS
                   rel="noopener noreferrer"
                   className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-marca-azul px-4 py-3 text-sm font-medium text-white transition hover:bg-marca-azul-oscuro"
                 >
-                  Página oficial
+                  {labelAccion(organizacion.url)}
                   <ExternalLink className="h-4 w-4" />
                 </a>
               )}

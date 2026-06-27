@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-brand-blue: #2563EB;
+  --color-brand-blue-light: #BFDBFE;
+  --color-brand-blue-dark: #1D4ED8;
+  --color-section-desaparecidos: #A32D2D;
+  --color-section-colaboracion: #0F766E;
+  --color-status-buscando-bg: #FCEBEB;
+  --color-status-buscando-fg: #A32D2D;
+  --color-status-buscando-border: #A32D2D;
+  --color-status-encontrado-bg: #EAF3DE;
+  --color-status-encontrado-fg: #27500A;
+  --color-status-encontrado-border: #27500A;
+  --color-status-hospitalizado-bg: #FEF3C7;
+  --color-status-hospitalizado-fg: #92400E;
+  --color-status-hospitalizado-border: #D97706;
+  --color-status-fallecido-bg: #f1f5f9;
+  --color-status-fallecido-fg: #475569;
+  --color-status-fallecido-border: #cbd5e1;
+}
+
 body {
   background-color: #F1EFE8;
+}
+
+@layer components {
+  /* Guía compartida para CTAs del hero: mantener 48px+ de alto y padding compacto en móvil. */
+  .hero-action-button {
+    @apply min-h-[3rem] px-4 py-3.5 text-[13px] leading-tight sm:px-5 sm:py-3 sm:text-sm;
+  }
+}
+
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.modal-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }

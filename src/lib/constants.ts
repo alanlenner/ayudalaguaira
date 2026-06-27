@@ -90,3 +90,65 @@ export function waLink(tel: string): string {
   const limpio = limpiarTelefono(tel);
   return `https://wa.me/${limpio.startsWith("0") ? "58" + limpio.slice(1) : limpio}`;
 }
+
+const WHATSAPP_HOSTS = new Set([
+  "wa.me",
+  "api.whatsapp.com",
+  "chat.whatsapp.com",
+  "whatsapp.com",
+  "www.whatsapp.com",
+]);
+
+export function normalizarWhatsappWidgetUrl(valor?: string | null): string | null {
+  const limpio = valor?.trim();
+  if (!limpio) return null;
+
+  if (/^\+?[0-9\s()-]+$/.test(limpio)) {
+    return waLink(limpio);
+  }
+
+  const conProtocolo = limpio.startsWith("http://") || limpio.startsWith("https://")
+    ? limpio
+    : `https://${limpio}`;
+
+  try {
+    const url = new URL(conProtocolo);
+    if (WHATSAPP_HOSTS.has(url.hostname)) {
+      return url.toString();
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+export function extraerMensajeWhatsapp(urlString: string): string {
+  try {
+    const url = new URL(urlString);
+    return url.searchParams.get("text") ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function construirWhatsappHrefConMensaje(urlString: string, mensaje: string): string {
+  try {
+    const url = new URL(urlString);
+
+    if (url.hostname === "chat.whatsapp.com") {
+      return url.toString();
+    }
+
+    const texto = mensaje.trim();
+    if (texto) {
+      url.searchParams.set("text", texto);
+    } else {
+      url.searchParams.delete("text");
+    }
+
+    return url.toString();
+  } catch {
+    return urlString;
+  }
+}

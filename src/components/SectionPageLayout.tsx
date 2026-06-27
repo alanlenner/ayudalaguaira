@@ -18,6 +18,11 @@ type SectionPageLayoutProps = {
 };
 
 export default function SectionPageLayout({ currentSection, children }: SectionPageLayoutProps) {
+  const activeTabClass =
+    currentSection === "desaparecidos" ? "text-marca-desaparecidos" : "text-marca-azul";
+  const activeTabIndicatorClass =
+    currentSection === "desaparecidos" ? "bg-marca-desaparecidos" : "bg-marca-azul";
+
   return (
     <div className="min-h-screen bg-marca-fondo">
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
@@ -42,14 +47,14 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
                 href={tab.href}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium transition-all relative ${
                   currentSection === tab.key
-                    ? "text-marca-azul"
+                    ? activeTabClass
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
                 {tab.icon}
                 {tab.label}
                 {currentSection === tab.key && (
-                  <div className="absolute bottom-0 left-4 right-4 h-[2.5px] bg-marca-azul rounded-t-full" />
+                  <div className={`absolute bottom-0 left-4 right-4 h-[2.5px] rounded-t-full ${activeTabIndicatorClass}`} />
                 )}
               </Link>
             ))}
@@ -57,72 +62,57 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
         </div>
       </div>
 
-      <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white">
-        <div className="max-w-3xl mx-auto px-4 pt-8 pb-8">
-          <div className="flex items-start gap-3 mb-6">
-            <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Brain className="w-5 h-5 text-blue-300" />
+      {currentSection === "desaparecidos" && (
+        <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white">
+          <div className="max-w-3xl mx-auto px-4 pt-8 pb-8">
+            <div className="flex items-start gap-3 mb-6">
+              <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Brain className="w-5 h-5 text-marca-azul-claro" />
+              </div>
+              <div>
+                <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
+                  Estás a salvo. Respira.
+                </h2>
+              </div>
             </div>
-            <div>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
-                Estás a salvo. Respira.
-              </h2>
-            </div>
-          </div>
 
-          <div className="flex flex-col gap-2 mb-8">
-            <Link
-              href="/desaparecidos?reportar=1"
-              className="w-full bg-marca-verde hover:opacity-90 text-white py-3 px-5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center"
-            >
-              + Reportar a alguien
-            </Link>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2 mb-8">
               <Link
-                href="/colaboradores?registro=1"
-                className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+                href="/desaparecidos?reportar=1"
+                className="hero-action-button w-full rounded-xl bg-[#16A34A] font-semibold text-white transition-all flex items-center justify-center hover:bg-[#15803D]"
               >
-                <HandHeart className="w-4 h-4" />
-                Soy psicólogo y quiero ayudar
+                + Reportar a alguien
               </Link>
-              <Link
-                href="/colaboradores"
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
-              >
-                <Heart className="w-4 h-4" />
-                Necesito apoyo emocional
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Link
+                  href="/colaboradores?registro=1"
+                  className="hero-action-button flex-1 rounded-xl border border-white/30 bg-white font-medium text-slate-900 transition-all flex items-center justify-center gap-2 hover:bg-slate-50"
+                >
+                  <HandHeart className="w-4 h-4" />
+                  Soy psicólogo y quiero ayudar
+                </Link>
+                <Link
+                  href="/colaboradores"
+                  className="hero-action-button flex-1 rounded-xl bg-marca-azul font-medium text-white transition-all flex items-center justify-center gap-2 hover:bg-marca-azul-oscuro"
+                >
+                  <Heart className="w-4 h-4" />
+                  Necesito apoyo emocional
+                </Link>
+              </div>
             </div>
-          </div>
 
-          <div className="mb-8 flex flex-col sm:flex-row gap-2">
-            <Link
-              href="/ayuda"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
-            >
-              <LifeBuoy className="w-4 h-4" />
-              Ver organizaciones de ayuda
-            </Link>
-            <Link
-              href="/red"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white py-3 px-5 rounded-xl font-medium text-sm transition-all inline-flex items-center justify-center gap-2"
-            >
-              <Network className="w-4 h-4" />
-              Ver la red de plataformas de ayuda
-            </Link>
-          </div>
-
-          <div className="border-t border-white/10 pt-6">
-            <h3 className="font-serif text-lg sm:text-xl font-bold leading-[1.2] mb-2">
-              Ninguna familia debería buscar sola
-            </h3>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-lg">
-              Publica el nombre de quien buscas, la zona y un teléfono de contacto.
-              No hay trámites — el reporte queda visible de inmediato.
-            </p>
+            <div className="border-t border-white/10 pt-6">
+              <h3 className="font-serif text-lg sm:text-xl font-bold leading-[1.2] mb-2">
+                Juntos encontramos más. Publica un reporte y ayuda a difundir su búsqueda.
+              </h3>
+              <p className="text-slate-400 text-xs leading-relaxed max-w-lg">
+                Publica el nombre de quien buscas, la zona y un teléfono de contacto.
+                No hay trámites — el reporte queda visible de inmediato.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {children}
 

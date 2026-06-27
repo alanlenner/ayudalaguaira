@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "lint": "tsc --noEmit --pretty false",
     "start": "next start"
   },
   "dependencies": {

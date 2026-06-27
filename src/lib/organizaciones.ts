@@ -42,6 +42,14 @@ export const ORGANIZACIONES: Organizacion[] = [
     telefonos: ["0414-42665181"],
   },
   {
+    nombre: "Psicólogos por Venezuela",
+    descripcion:
+      "Red de más de 600 psicólogos, psiquiatras y profesionales de salud mental que brindan apoyo psicoemocional gratuito e inmediato con lineamientos de Primeros Auxilios Psicológicos.",
+    categoria: "voluntariado",
+    url: "https://wa.me/5215533200457?text=Hola,%20necesito%20apoyo%20psicol%C3%B3gico",
+    telefonos: ["+52 55 3320 0457"],
+  },
+  {
     nombre: "Rehabilitarte",
     descripcion:
       "Contacto de acompañamiento terapéutico y atención emocional para personas afectadas.",

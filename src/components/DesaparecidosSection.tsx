@@ -33,6 +33,14 @@ import { buildUrlWithUpdatedQuery } from "@/lib/url-filters";
 
 const ZONAS_FILTRO = ["Todas", ...ZONAS_DB] as const;
 type Zona = (typeof ZONAS_FILTRO)[number];
+const CODIGOS_PAIS = [
+  { value: "+58", label: "VE (+58)" },
+  { value: "+57", label: "CO (+57)" },
+  { value: "+1", label: "US (+1)" },
+  { value: "+34", label: "ES (+34)" },
+  { value: "+51", label: "PE (+51)" },
+] as const;
+type CodigoPais = (typeof CODIGOS_PAIS)[number]["value"];
 
 const HASHTAGS: Record<ZonaDB, string> = {
   "Naiguatá": "#NaiguataDesaparecidos",
@@ -45,6 +53,36 @@ const HASHTAGS: Record<ZonaDB, string> = {
   "Domingo Luciani": "#DomingoLucianiDesaparecidos",
   "Otro": "#OtroDesaparecidos",
 };
+
+const ACENTOS_BUSQUEDA: Record<string, string[]> = {
+  a: ["a", "á", "à", "ä", "â"],
+  e: ["e", "é", "è", "ë", "ê"],
+  i: ["i", "í", "ì", "ï", "î"],
+  o: ["o", "ó", "ò", "ö", "ô"],
+  u: ["u", "ú", "ù", "ü", "û"],
+  n: ["n", "ñ"],
+};
+
+function normalizarBusqueda(valor: string) {
+  return valor
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function crearPatronesBusqueda(valor: string) {
+  const base = normalizarBusqueda(valor);
+  if (!base) return [];
+
+  const variantes = base.split("").reduce<string[]>((acc, char) => {
+    const reemplazos = ACENTOS_BUSQUEDA[char] ?? [char];
+    const siguientes = acc.flatMap((actual) => reemplazos.map((reemplazo) => `${actual}${reemplazo}`));
+    return siguientes.slice(0, 32);
+  }, [""]);
+
+  return Array.from(new Set([base, ...variantes])).map((patron) => `%${patron}%`);
+}
 
 interface Reporte {
   id: number;
@@ -64,6 +102,12 @@ interface Duplicado {
   nombre: string;
   apellido: string;
   zona: string;
+  estado: Reporte["estado"];
+  created_at: string;
+  ultima_ubicacion: string | null;
+  telefono: string;
+  foto_url: string | null;
+  descripcion: string | null;
 }
 
 interface DesaparecidosSectionProps {
@@ -84,6 +128,7 @@ interface ReporteBorrador {
   nombre: string;
   apellido: string;
   zona: ZonaDB;
+  codigoPais?: string;
   telefono: string;
   ultimaUbicacion: string;
   descripcion: string;
@@ -91,11 +136,12 @@ interface ReporteBorrador {
 }
 
 type FiltroEstado = "buscando" | "encontrados" | "hospitalizado";
+type EstadoAparecio = "encontrado_vivo" | "encontrado_fallecido" | "hospitalizado";
 
 function StatusBadge({ estado }: { estado: string }) {
   if (estado === "buscando") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-status-buscando-border bg-status-buscando-bg px-2.5 py-1 text-[13px] font-medium text-status-buscando-fg">
         <Search className="w-3 h-3" />
         Buscando
       </span>
@@ -103,7 +149,7 @@ function StatusBadge({ estado }: { estado: string }) {
   }
   if (estado === "encontrado_vivo") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-marca-verde/10 text-marca-verde rounded-full text-xs font-medium">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-status-encontrado-border bg-status-encontrado-bg px-2.5 py-1 text-[13px] font-medium text-status-encontrado-fg">
         <Check className="w-3 h-3" />
         Encontrado vivo
       </span>
@@ -111,14 +157,15 @@ function StatusBadge({ estado }: { estado: string }) {
   }
   if (estado === "hospitalizado") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-status-hospitalizado-border bg-status-hospitalizado-bg px-2.5 py-1 text-[13px] font-medium text-status-hospitalizado-fg">
         🏥 Ingresado en Hospital
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
-      Encontrado fallecido
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-status-fallecido-border bg-status-fallecido-bg px-2.5 py-1 text-[13px] font-medium text-status-fallecido-fg">
+      <Heart className="w-3 h-3 fill-current" />
+      Fallecido/a
     </span>
   );
 }
@@ -137,22 +184,22 @@ function TarjetaReporte({ pub, onSelect }: { pub: Reporte; onSelect: (r: Reporte
         </div>
       )}
       <div className="p-3 flex-1 flex flex-col">
-        <h3 className="font-medium text-sm text-slate-800 leading-tight line-clamp-1 mb-1">
+        <h3 className="mb-2 text-[17px] font-semibold leading-tight text-slate-800 line-clamp-2">
           {pub.nombre} {pub.apellido}
         </h3>
         <StatusBadge estado={pub.estado} />
-        <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-marca-azul/10 text-marca-azul rounded-full text-[10px] font-medium">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-marca-azul/10 px-2.5 py-1 text-[13px] font-medium text-marca-azul">
             <MapPin className="w-2.5 h-2.5" />
             {pub.zona}
           </span>
-          <span className="flex items-center gap-1 text-[10px] text-slate-400">
+          <span className="flex items-center gap-1 text-[13px] text-slate-500">
             <Clock className="w-2.5 h-2.5" />
             {tiempoRelativo(pub.created_at)}
           </span>
         </div>
         {pub.descripcion && (
-          <p className="text-[11px] text-slate-400 mt-1.5 line-clamp-2">{pub.descripcion}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-slate-500 line-clamp-2">{pub.descripcion}</p>
         )}
       </div>
     </article>
@@ -162,23 +209,49 @@ function TarjetaReporte({ pub, onSelect }: { pub: Reporte; onSelect: (r: Reporte
 function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; onClose: () => void; onActualizado?: (r: Reporte) => void }) {
   const telLimpio = limpiarTelefono(pub.telefono);
   const [mostrarAparecio, setMostrarAparecio] = useState(false);
-  const [telVerificacion, setTelVerificacion] = useState("");
+  const [datosAparecio, setDatosAparecio] = useState({
+    contacto: "",
+    nombreContacto: "",
+    codigoPais: "+58" as CodigoPais,
+    telefono: "",
+    estado: "encontrado_vivo" as EstadoAparecio,
+    hospital: "",
+    parentesco: "",
+  });
   const [errorVerif, setErrorVerif] = useState("");
   const [enviandoAparecio, setEnviandoAparecio] = useState(false);
   const [exito, setExito] = useState(false);
 
   const confirmarAparecio = async () => {
-    const ingresado = limpiarTelefono(telVerificacion);
-    const original = limpiarTelefono(pub.telefono);
-    if (ingresado.length < 7 || (!original.endsWith(ingresado.slice(-7)) && ingresado !== original)) {
-      setErrorVerif("El teléfono no coincide con el del reporte.");
+    const telefonoValidacion = validarTelefono(`${datosAparecio.codigoPais}${datosAparecio.telefono}`.trim());
+    if (!datosAparecio.contacto.trim()) {
+      setErrorVerif("Indica nombre y apellido de quien confirma.");
+      return;
+    }
+    if (!telefonoValidacion.valido) {
+      setErrorVerif(telefonoValidacion.mensaje);
+      return;
+    }
+    if (datosAparecio.estado === "hospitalizado" && !datosAparecio.hospital.trim()) {
+      setErrorVerif("Indica el nombre del hospital.");
       return;
     }
     setEnviandoAparecio(true);
     setErrorVerif("");
+    const descripcionActualizada = [
+      pub.descripcion,
+      `Confirmado por: ${datosAparecio.contacto.trim()}`,
+      datosAparecio.nombreContacto.trim() ? `Contacto alterno: ${datosAparecio.nombreContacto.trim()}` : null,
+      datosAparecio.parentesco.trim() ? `Parentesco: ${datosAparecio.parentesco.trim()}` : null,
+      datosAparecio.estado === "hospitalizado" ? `Hospital: ${datosAparecio.hospital.trim()}` : null,
+    ].filter(Boolean).join("\n");
     const { error } = await supabase
       .from("desaparecidos")
-      .update({ estado: "encontrado_vivo" })
+      .update({
+        estado: datosAparecio.estado,
+        telefono: telefonoValidacion.telefonoNormalizado,
+        descripcion: descripcionActualizada || null,
+      })
       .eq("id", pub.id);
     setEnviandoAparecio(false);
     if (error) {
@@ -186,22 +259,31 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
       return;
     }
     setExito(true);
-    if (onActualizado) onActualizado({ ...pub, estado: "encontrado_vivo" });
+    if (onActualizado) {
+      onActualizado({
+        ...pub,
+        estado: datosAparecio.estado,
+        telefono: telefonoValidacion.telefonoNormalizado,
+        descripcion: descripcionActualizada || null,
+      });
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto modal-scroll" onClick={(e) => e.stopPropagation()}>
         {pub.foto_url && (
           <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full" />
         )}
-        <div className="p-5 space-y-3">
-          <div className="flex items-start justify-between">
-            <h2 className="text-lg font-semibold text-slate-800">{pub.nombre} {pub.apellido}</h2>
-            <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition">
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
-          </div>
+        <button
+          onClick={onClose}
+          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-sm transition hover:bg-slate-50"
+          aria-label="Cerrar detalle"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="p-5 pt-12 space-y-3">
+          <h2 className="text-lg font-semibold text-slate-800">{pub.nombre} {pub.apellido}</h2>
           <StatusBadge estado={exito ? "encontrado_vivo" : pub.estado} />
           <div className="flex flex-wrap gap-2 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-marca-azul/10 text-marca-azul rounded-full font-medium">
@@ -241,26 +323,82 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
                   ¡Apareció!
                 </button>
               ) : (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
-                  <p className="text-xs text-emerald-700 font-medium">Para confirmar, ingresa el teléfono de contacto del reporte:</p>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-3">
+                  <p className="text-xs text-emerald-700 font-medium">Confirma los datos de la persona localizada:</p>
                   <input
-                    type="tel"
-                    value={telVerificacion}
-                    onChange={(e) => setTelVerificacion(e.target.value)}
-                    placeholder="Ej: 0412-1234567"
+                    type="text"
+                    value={datosAparecio.contacto}
+                    onChange={(e) => setDatosAparecio((actual) => ({ ...actual, contacto: e.target.value }))}
+                    placeholder="Nombre y apellido"
+                    className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                  <input
+                    type="text"
+                    value={datosAparecio.nombreContacto}
+                    onChange={(e) => setDatosAparecio((actual) => ({ ...actual, nombreContacto: e.target.value }))}
+                    placeholder="Nombre de contacto (opcional)"
+                    className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                  <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-2">
+                    <select
+                      value={datosAparecio.codigoPais}
+                      onChange={(e) => setDatosAparecio((actual) => ({ ...actual, codigoPais: e.target.value as CodigoPais }))}
+                      className="px-3 py-2 border border-emerald-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                      aria-label="Código de país"
+                    >
+                      {CODIGOS_PAIS.map((codigo) => (
+                        <option key={codigo.value} value={codigo.value}>{codigo.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={datosAparecio.telefono}
+                      onChange={(e) => setDatosAparecio((actual) => ({ ...actual, telefono: e.target.value }))}
+                      placeholder="4121234567"
+                      className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+                  <select
+                    value={datosAparecio.estado}
+                    onChange={(e) => setDatosAparecio((actual) => ({ ...actual, estado: e.target.value as EstadoAparecio }))}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  >
+                    <option value="encontrado_vivo">Con vida</option>
+                    <option value="encontrado_fallecido">Fallecido</option>
+                    <option value="hospitalizado">Hospitalizado</option>
+                  </select>
+                  {datosAparecio.estado === "hospitalizado" && (
+                    <input
+                      type="text"
+                      value={datosAparecio.hospital}
+                      onChange={(e) => setDatosAparecio((actual) => ({ ...actual, hospital: e.target.value }))}
+                      placeholder="Nombre del hospital"
+                      className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  )}
+                  <input
+                    type="text"
+                    value={datosAparecio.parentesco}
+                    onChange={(e) => setDatosAparecio((actual) => ({ ...actual, parentesco: e.target.value }))}
+                    placeholder="Parentesco (opcional)"
                     className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   />
                   {errorVerif && <p className="text-xs text-red-500">{errorVerif}</p>}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { setMostrarAparecio(false); setTelVerificacion(""); setErrorVerif(""); }}
+                      onClick={() => {
+                        setMostrarAparecio(false);
+                        setDatosAparecio({ contacto: "", nombreContacto: "", codigoPais: "+58", telefono: "", estado: "encontrado_vivo", hospital: "", parentesco: "" });
+                        setErrorVerif("");
+                      }}
                       className="flex-1 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50 transition"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={confirmarAparecio}
-                      disabled={enviandoAparecio || !telVerificacion.trim()}
+                      disabled={enviandoAparecio || !datosAparecio.contacto.trim() || !datosAparecio.telefono.trim()}
                       className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition flex items-center justify-center gap-1"
                     >
                       {enviandoAparecio ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
@@ -274,7 +412,7 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
 
           {exito && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-              <p className="text-sm text-emerald-700 font-medium">¡Registro actualizado! {pub.nombre} fue marcado/a como encontrado/a.</p>
+              <p className="text-sm text-emerald-700 font-medium">Registro actualizado</p>
             </div>
           )}
         </div>
@@ -328,6 +466,7 @@ export default function DesaparecidosSection({
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [zona, setZona] = useState<ZonaDB>("Naiguatá");
+  const [codigoPais, setCodigoPais] = useState<CodigoPais>("+58");
   const [telefono, setTelefono] = useState("");
   const [telefonoTocado, setTelefonoTocado] = useState(false);
   const [ultimaUbicacion, setUltimaUbicacion] = useState("");
@@ -337,10 +476,12 @@ export default function DesaparecidosSection({
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [duplicados, setDuplicados] = useState<Duplicado[]>([]);
+  const [continuarConDuplicado, setContinuarConDuplicado] = useState(false);
   const dupTimeout = useRef<NodeJS.Timeout | null>(null);
   const [contadores, setContadores] = useState({ buscando: 0, encontrado_vivo: 0, encontrado_fallecido: 0, hospitalizado: 0 });
   const zonaEsOtro = zona === "Otro";
-  const telefonoValidacion = telefono.trim() ? validarTelefono(telefono) : null;
+  const telefonoCompleto = `${codigoPais}${telefono}`.trim();
+  const telefonoValidacion = telefono.trim() ? validarTelefono(telefonoCompleto) : null;
   const telefonoError =
     telefonoTocado && telefonoValidacion && !telefonoValidacion.valido
       ? telefonoValidacion.mensaje
@@ -357,8 +498,11 @@ export default function DesaparecidosSection({
         .from("desaparecidos")
         .select("id, nombre, apellido, zona, telefono, foto_url, ultima_ubicacion, descripcion, estado, created_at", { count: "exact" });
       if (busqueda.trim()) {
-        const b = `%${busqueda.trim()}%`;
-        query = query.or(`nombre.ilike.${b},apellido.ilike.${b}`);
+        const filtrosBusqueda = crearPatronesBusqueda(busqueda).flatMap((patron) => [
+          `nombre.ilike.${patron}`,
+          `apellido.ilike.${patron}`,
+        ]);
+        query = query.or(filtrosBusqueda.join(","));
       } else if (zonaActiva !== "Todas") {
         query = query.eq("zona", zonaActiva);
       }
@@ -405,6 +549,7 @@ export default function DesaparecidosSection({
       nombre,
       apellido,
       zona,
+      codigoPais,
       telefono,
       ultimaUbicacion,
       descripcion,
@@ -422,7 +567,7 @@ export default function DesaparecidosSection({
     }
 
     localStorage.setItem(REPORTE_BORRADOR_KEY, JSON.stringify(borradorActual));
-  }, [mostrarFormulario, tokenGenerado, nombre, apellido, zona, telefono, ultimaUbicacion, descripcion, estado]);
+  }, [mostrarFormulario, tokenGenerado, nombre, apellido, zona, codigoPais, telefono, ultimaUbicacion, descripcion, estado]);
 
   useEffect(() => {
     if (!mostrarFormulario || tokenGenerado || typeof window === "undefined") {
@@ -460,12 +605,46 @@ export default function DesaparecidosSection({
 
   const buscarDuplicados = (nom: string, ape: string) => {
     if (dupTimeout.current) clearTimeout(dupTimeout.current);
-    if (nom.length < 2 && ape.length < 2) { setDuplicados([]); return; }
+    setContinuarConDuplicado(false);
+    const nombreBuscado = nom.trim();
+    const apellidoBuscado = ape.trim();
+    if (nombreBuscado.length < 2 && apellidoBuscado.length < 2) { setDuplicados([]); return; }
     dupTimeout.current = setTimeout(async () => {
-      const termino = `%${nom}%`;
-      const { data } = await supabase.from("desaparecidos").select("id, nombre, apellido, zona").or(`nombre.ilike.${termino},apellido.ilike.${termino}`).limit(5);
+      const filtros = [
+        nombreBuscado ? `nombre.ilike.%${nombreBuscado}%` : null,
+        apellidoBuscado ? `apellido.ilike.%${apellidoBuscado}%` : null,
+      ].filter(Boolean).join(",");
+      const { data } = await supabase
+        .from("desaparecidos")
+        .select("id, nombre, apellido, zona, estado, created_at, ultima_ubicacion, telefono, foto_url, descripcion")
+        .or(filtros)
+        .order("created_at", { ascending: false })
+        .limit(3);
       if (data) setDuplicados(data as Duplicado[]);
     }, 400);
+  };
+
+  const verReporteExistente = (duplicado: Duplicado) => {
+    setMostrarFormulario(false);
+    setReporteSeleccionado({
+      id: duplicado.id,
+      nombre: duplicado.nombre,
+      apellido: duplicado.apellido,
+      zona: duplicado.zona as ZonaDB,
+      telefono: duplicado.telefono,
+      foto_url: duplicado.foto_url,
+      ultima_ubicacion: duplicado.ultima_ubicacion,
+      descripcion: duplicado.descripcion,
+      estado: duplicado.estado,
+      created_at: duplicado.created_at,
+    });
+  };
+
+  const confirmarContinuarConDuplicado = () => {
+    const confirmado = window.confirm("Ya hay reportes parecidos. Confirma que quieres publicar otro reporte de todos modos.");
+    if (confirmado) {
+      setContinuarConDuplicado(true);
+    }
   };
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -497,6 +676,10 @@ export default function DesaparecidosSection({
       alert("Indica la ubicación para la zona 'Otro'.");
       return;
     }
+    if (duplicados.length > 0 && !continuarConDuplicado) {
+      alert("Revisa el reporte existente o confirma que quieres continuar de todos modos.");
+      return;
+    }
     setEnviando(true);
     let foto_url: string | null = null;
     if (fotoFile) {
@@ -525,7 +708,7 @@ export default function DesaparecidosSection({
   };
 
   const cerrarFormulario = () => {
-    setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setTelefono(""); setTelefonoTocado(false); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setCopiado(false); setBorradorPendiente(null);
+    setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setCodigoPais("+58"); setTelefono(""); setTelefonoTocado(false); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setContinuarConDuplicado(false); setCopiado(false); setBorradorPendiente(null);
     onFormularioCerrado?.();
   };
 
@@ -534,7 +717,17 @@ export default function DesaparecidosSection({
     setNombre(borradorPendiente.nombre);
     setApellido(borradorPendiente.apellido);
     setZona(borradorPendiente.zona);
-    setTelefono(borradorPendiente.telefono);
+    const codigoGuardado = borradorPendiente.codigoPais;
+    if (codigoGuardado && CODIGOS_PAIS.some(({ value }) => value === codigoGuardado)) {
+      const codigoValido = codigoGuardado as CodigoPais;
+      setCodigoPais(codigoValido);
+      setTelefono(borradorPendiente.telefono);
+    } else {
+      const telefonoGuardado = borradorPendiente.telefono.trim();
+      const codigoDetectado = CODIGOS_PAIS.find(({ value }) => telefonoGuardado.startsWith(value));
+      setCodigoPais(codigoDetectado?.value ?? "+58");
+      setTelefono(codigoDetectado ? telefonoGuardado.slice(codigoDetectado.value.length).trim() : telefonoGuardado);
+    }
     setTelefonoTocado(false);
     setUltimaUbicacion(borradorPendiente.ultimaUbicacion);
     setDescripcion(borradorPendiente.descripcion);
@@ -563,6 +756,14 @@ export default function DesaparecidosSection({
     [pathname, router]
   );
 
+  const verReportesCoincidentes = useCallback(() => {
+    const termino = nombre.trim() || apellido.trim();
+    if (!termino) return;
+    setBusquedaInput(termino);
+    setMostrarFormulario(false);
+    actualizarFiltros({ q: termino, pagina: null });
+  }, [actualizarFiltros, apellido, nombre]);
+
   const [reporteSeleccionado, setReporteSeleccionado] = useState<Reporte | null>(null);
   const [mostrarConsentimiento, setMostrarConsentimiento] = useState(false);
   const [noVolverMostrar, setNoVolverMostrar] = useState(false);
@@ -590,36 +791,66 @@ export default function DesaparecidosSection({
     }
   }, [abrirFormulario]);
 
+  useEffect(() => {
+    const handleAbrirFormulario = () => {
+      intentarReportar();
+    };
+
+    window.addEventListener("desaparecidos:abrir-formulario", handleAbrirFormulario);
+    return () => {
+      window.removeEventListener("desaparecidos:abrir-formulario", handleAbrirFormulario);
+    };
+  }, []);
+
 
   return (
     <div>
       {/* Métricas de estado */}
-      <p className="text-xs text-slate-500 mt-4 mb-1">Toque un recuadro para filtrar por estado. Toque de nuevo para quitar el filtro.</p>
+      {/* TODO(DTV-FILT-02): el PDF no define aún este caso de filtros; detallarlo con QA y ajustar la interacción cuando exista una definición cerrada. */}
+      <p className="text-xs text-slate-500 mt-4 mb-1">Selecciona un recuadro para filtrar por estado. Selecciónalo de nuevo para quitar el filtro.</p>
       <div className="grid grid-cols-3 gap-2">
-        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "buscando" ? null : "buscando", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-amber-400 bg-amber-100 border border-amber-300" : "bg-amber-50 border border-amber-200"}`}>
-          <p className="text-lg font-bold text-amber-700">{contadores.buscando}</p>
-          <p className="text-[10px] text-amber-600">Buscando</p>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "buscando" ? null : "buscando", pagina: null })} className={`rounded-xl border p-2 text-center transition-all ${filtroEstado === "buscando" ? "ring-2 ring-[var(--color-status-buscando-border)] bg-status-buscando-bg border-status-buscando-border" : "bg-status-buscando-bg/60 border-status-buscando-border/40"}`}>
+          <p className="text-lg font-bold text-status-buscando-fg">{contadores.buscando}</p>
+          <p className="text-[10px] text-status-buscando-fg/80">Buscando</p>
         </button>
-        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "encontrados" ? null : "encontrados", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrados" ? "ring-2 ring-green-400 bg-green-100 border border-green-300" : "bg-green-50 border border-green-200"}`}>
-          <p className="text-lg font-bold text-green-700">{contadores.encontrado_vivo + contadores.encontrado_fallecido}</p>
-          <p className="text-[10px] text-green-600">Encontrados</p>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "encontrados" ? null : "encontrados", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "encontrados" ? "ring-2 ring-status-encontrado-border bg-status-encontrado-bg border border-status-encontrado-border" : "bg-status-encontrado-bg/60 border border-status-encontrado-border/40"}`}>
+          <p className="text-lg font-bold text-status-encontrado-fg">{contadores.encontrado_vivo + contadores.encontrado_fallecido}</p>
+          <p className="text-[10px] text-status-encontrado-fg/80">Encontrados</p>
         </button>
-        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "hospitalizado" ? null : "hospitalizado", pagina: null })} className={`rounded-xl p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-blue-400 bg-blue-100 border border-blue-300" : "bg-blue-50 border border-blue-200"}`}>
-          <p className="text-lg font-bold text-blue-700">{contadores.hospitalizado}</p>
-          <p className="text-[10px] text-blue-600">Hospitalizados</p>
+        <button onClick={() => actualizarFiltros({ estado: filtroEstado === "hospitalizado" ? null : "hospitalizado", pagina: null })} className={`rounded-xl border p-2 text-center transition-all ${filtroEstado === "hospitalizado" ? "ring-2 ring-status-hospitalizado-border bg-status-hospitalizado-bg border-status-hospitalizado-border" : "bg-status-hospitalizado-bg/60 border-status-hospitalizado-border/40"}`}>
+          <p className="text-lg font-bold text-status-hospitalizado-fg">{contadores.hospitalizado}</p>
+          <p className="text-[10px] text-status-hospitalizado-fg/80">Hospitalizados</p>
         </button>
       </div>
 
       {/* Filtro activo indicador */}
       {(filtroEstado || zonaActiva !== "Todas" || busqueda) && (
-        <div className="mt-2 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600">
-          Filtrando por: {filtroEstado && <strong>{filtroEstado === "buscando" ? "Buscando" : filtroEstado === "encontrados" ? "Encontrados" : "Hospitalizados"}</strong>}
-          {filtroEstado && (zonaActiva !== "Todas" || busqueda) && " + "}
-          {zonaActiva !== "Todas" && <strong>{zonaActiva}</strong>}
-          {zonaActiva !== "Todas" && busqueda && " + "}
-          {busqueda && <strong>Búsqueda: "{busqueda}"</strong>}
-          {" — "}
-          <button onClick={() => { setBusquedaInput(""); actualizarFiltros({ estado: null, zona: null, q: null, pagina: null }); }} className="underline text-marca-azul font-medium">Quitar filtros</button>
+        <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium text-slate-600">Filtros activos</span>
+            {filtroEstado && (
+              <span className="rounded-full bg-white px-2.5 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                {filtroEstado === "buscando"
+                  ? "Estado: Buscando"
+                  : filtroEstado === "encontrados"
+                    ? "Estado: Encontrados"
+                    : "Estado: Hospitalizados"}
+              </span>
+            )}
+            {zonaActiva !== "Todas" && (
+              <span className="rounded-full bg-white px-2.5 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                Zona: {zonaActiva}
+              </span>
+            )}
+            {busqueda && (
+              <span className="rounded-full bg-marca-azul/10 px-2.5 py-1 font-semibold text-marca-azul ring-1 ring-marca-azul/15">
+                Búsqueda: "{busqueda}"
+              </span>
+            )}
+            <button onClick={() => { setBusquedaInput(""); actualizarFiltros({ estado: null, zona: null, q: null, pagina: null }); }} className="font-medium text-marca-azul underline underline-offset-2">
+              Quitar filtros
+            </button>
+          </div>
         </div>
       )}
 
@@ -635,10 +866,25 @@ export default function DesaparecidosSection({
 
       {/* Buscador */}
       <div className="mt-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <label htmlFor="busqueda-reportes" className="text-sm font-medium text-slate-700">
+            Buscar por nombre o apellido
+          </label>
+          {busqueda && (
+            <span className="rounded-full bg-marca-azul px-2.5 py-1 text-[11px] font-semibold text-white">
+              Buscando ahora
+            </span>
+          )}
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Buscar por nombre o apellido..." value={busquedaInput} onChange={(e) => { const value = e.target.value; setBusquedaInput(value); actualizarFiltros({ q: value.trim() || null, pagina: null }); }} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent" />
+          <input id="busqueda-reportes" type="text" placeholder="Buscar por nombre o apellido..." value={busquedaInput} onChange={(e) => { const value = e.target.value; setBusquedaInput(value); actualizarFiltros({ q: value.trim() || null, pagina: null }); }} className={`w-full pl-10 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 focus:border-transparent ${busqueda ? "border-marca-azul bg-marca-azul/5 text-slate-900" : "bg-white border border-slate-200"}`} />
         </div>
+        {busqueda && (
+          <p className="mt-2 text-xs font-medium text-marca-azul">
+            Mostrando coincidencias para "{busqueda}".
+          </p>
+        )}
       </div>
 
       {/* Botón reportar */}
@@ -720,11 +966,17 @@ export default function DesaparecidosSection({
 
       {/* Modal formulario */}
       {mostrarFormulario && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
-              <h2 className="font-medium text-lg">{tokenGenerado ? "Reporte publicado" : "Reportar a alguien que buscamos"}</h2>
-              <button onClick={cerrarFormulario} className="p-1 hover:bg-slate-100 rounded-lg transition"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+        <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto modal-scroll">
+            <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between gap-3 z-10">
+              <button
+                onClick={cerrarFormulario}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+              >
+                <X className="w-4 h-4" />
+                Volver
+              </button>
+              <h2 className="flex-1 text-right font-medium text-lg">{tokenGenerado ? "Reporte publicado" : "Reportar a alguien que buscamos"}</h2>
             </div>
 
             {tokenGenerado ? (
@@ -772,6 +1024,12 @@ export default function DesaparecidosSection({
                     Continuar
                   </button>
                 </div>
+                <a
+                  href="/editar/borrador"
+                  className="block rounded-xl border border-amber-200 px-4 py-3 text-center text-sm font-medium text-amber-900 transition hover:bg-amber-100"
+                >
+                  Editar o eliminar borrador
+                </a>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
@@ -784,14 +1042,50 @@ export default function DesaparecidosSection({
                   <input type="text" value={apellido} onChange={(e) => { setApellido(e.target.value); buscarDuplicados(nombre, e.target.value); }} placeholder="Apellido" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" required />
                 </div>
                 {duplicados.length > 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 space-y-2">
-                    <p className="text-xs font-medium text-yellow-800">Posibles reportes existentes:</p>
-                    {duplicados.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between">
-                        <span className="text-xs text-yellow-700">{d.nombre} {d.apellido} ({d.zona})</span>
-                        <a href={`#reporte-${d.id}`} onClick={() => setMostrarFormulario(false)} className="text-xs text-yellow-600 underline font-medium">Ver reporte</a>
-                      </div>
-                    ))}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 space-y-3">
+                    <div>
+                      <p className="text-xs font-medium text-yellow-800">Ya encontramos reportes que podrían coincidir.</p>
+                      <p className="mt-1 text-xs text-yellow-700">Revisa si ya existe antes de publicar otro reporte.</p>
+                    </div>
+                    <div className="space-y-2">
+                      {duplicados.map((d) => (
+                        <div key={d.id} className="rounded-lg border border-yellow-200 bg-white p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-medium text-slate-800">{d.nombre} {d.apellido}</p>
+                              <p className="mt-1 text-xs text-slate-500">
+                                {d.zona} · {tiempoRelativo(d.created_at)}
+                              </p>
+                              {d.ultima_ubicacion && (
+                                <p className="mt-1 text-xs text-slate-500">Zona o referencia: {d.ultima_ubicacion}</p>
+                              )}
+                            </div>
+                            <StatusBadge estado={d.estado} />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => verReporteExistente(d)}
+                            className="mt-3 w-full rounded-lg bg-yellow-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-yellow-700"
+                          >
+                            Ver reporte existente
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={confirmarContinuarConDuplicado}
+                      className="w-full rounded-lg border border-yellow-300 bg-white px-3 py-2 text-xs font-medium text-yellow-800 transition hover:bg-yellow-100"
+                    >
+                      {continuarConDuplicado ? "Continuar de todos modos confirmado" : "Continuar de todos modos"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={verReportesCoincidentes}
+                      className="w-full rounded-lg px-3 py-2 text-xs font-medium text-yellow-800 underline-offset-2 transition hover:underline"
+                    >
+                      Ver todos los reportes coincidentes en el listado
+                    </button>
                   </div>
                 )}
                 <div>
@@ -818,15 +1112,29 @@ export default function DesaparecidosSection({
                 )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Celular de contacto <span className="text-red-500">*</span></label>
-                  <input
-                    type="tel"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    onBlur={() => setTelefonoTocado(true)}
-                    placeholder="+58 412-1234567"
-                    className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${telefonoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"}`}
-                    required
-                  />
+                  <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-2">
+                    <select
+                      value={codigoPais}
+                      onChange={(e) => setCodigoPais(e.target.value as CodigoPais)}
+                      className={`px-3 py-2.5 border rounded-xl bg-white text-sm focus:outline-none focus:ring-2 ${telefonoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"}`}
+                      aria-label="Código de país"
+                    >
+                      {CODIGOS_PAIS.map((codigo) => (
+                        <option key={codigo.value} value={codigo.value}>{codigo.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      onBlur={() => setTelefonoTocado(true)}
+                      placeholder="4121234567"
+                      className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${telefonoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"}`}
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Selecciona el código de país e introduce el número completo sin omitir dígitos.</p>
                   {telefonoError && <p className="mt-1 text-xs text-red-600">{telefonoError}</p>}
                 </div>
                 <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-marca-azul/40 hover:bg-marca-azul/5 transition">
@@ -887,7 +1195,7 @@ export default function DesaparecidosSection({
 
       {/* Modal de consentimiento */}
       {mostrarConsentimiento && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4">
             <h3 className="text-lg font-medium text-slate-800">Antes de continuar</h3>
             <p className="text-sm text-slate-500 leading-relaxed">

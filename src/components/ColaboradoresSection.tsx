@@ -56,7 +56,7 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
       className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all"
     >
       <div className="p-3 flex-1 flex flex-col">
-        <h3 className="font-medium text-sm text-slate-800 line-clamp-1 mb-1">{col.nombre}</h3>
+        <h3 className="font-medium text-sm text-slate-800 mb-1 break-words">{col.nombre}</h3>
         <div className="flex flex-wrap gap-1 mb-2">
           {col.tipo_ayuda.map((t) => (
             <span key={t} className="px-1.5 py-0.5 bg-marca-azul/10 text-marca-azul rounded-full text-[10px] font-medium">
@@ -184,6 +184,7 @@ export default function ColaboradoresSection({
   const [formEmail, setFormEmail] = useState("");
   const [formRedes, setFormRedes] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [contactoError, setContactoError] = useState("");
 
   const cargarConteos = useCallback(async () => {
     const { data } = await supabase
@@ -258,9 +259,11 @@ export default function ColaboradoresSection({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nombre.trim() || !ubicacion.trim() || tipoAyuda.length === 0 || (!formTelefono.trim() && !formEmail.trim())) {
+      setContactoError("Indica al menos un dato de contacto: celular o email.");
       alert("Completa nombre, tipo de ayuda, ubicación y al menos un contacto (celular o email)");
       return;
     }
+    setContactoError("");
 
     setEnviando(true);
     const edit_token = generarToken();
@@ -304,6 +307,7 @@ export default function ColaboradoresSection({
     setFormEmail("");
     setFormRedes("");
     setDescripcion("");
+    setContactoError("");
     setCopiado(false);
     onFormularioCerrado?.();
   };
@@ -322,7 +326,7 @@ export default function ColaboradoresSection({
       {/* Métricas */}
       {!cargando && colaboradores.length > 0 && (
         <div className="grid grid-cols-2 gap-3 mt-6 mb-5">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl py-3 px-4 text-center">
+          <div className="bg-marca-azul/10 border border-marca-azul/20 rounded-xl py-3 px-4 text-center">
             <p className="text-2xl font-bold text-marca-azul tabular-nums">{totalColaboradores}</p>
             <p className="text-xs text-slate-600 mt-0.5">Colaboradores activos</p>
           </div>
@@ -357,30 +361,33 @@ export default function ColaboradoresSection({
       </div>
 
       {/* Filtro por tipo */}
-      <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
-        <button
-          onClick={() => actualizarFiltros({ tipo: null, pagina: null })}
-          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            filtroTipo === "todos"
-              ? "bg-marca-azul text-white"
-              : "bg-white text-slate-600 border border-slate-200"
-          }`}
-        >
-          Todos
-        </button>
-        {TIPOS_AYUDA.map((t) => (
+      <div className="relative mt-3">
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-slate-50 to-transparent" />
+        <div className="flex gap-2 overflow-x-auto pb-1 pr-8 scrollbar-hide">
           <button
-            key={t.value}
-            onClick={() => actualizarFiltros({ tipo: t.value, pagina: null })}
+            onClick={() => actualizarFiltros({ tipo: null, pagina: null })}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              filtroTipo === t.value
+              filtroTipo === "todos"
                 ? "bg-marca-azul text-white"
                 : "bg-white text-slate-600 border border-slate-200"
             }`}
           >
-            {t.label}
+            Todos
           </button>
-        ))}
+          {TIPOS_AYUDA.map((t) => (
+            <button
+              key={t.value}
+              onClick={() => actualizarFiltros({ tipo: t.value, pagina: null })}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filtroTipo === t.value
+                  ? "bg-marca-azul text-white"
+                  : "bg-white text-slate-600 border border-slate-200"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Feed */}
@@ -495,7 +502,7 @@ export default function ColaboradoresSection({
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Nombre <span className="text-marca-dorado">*</span>
+                    Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -509,7 +516,7 @@ export default function ColaboradoresSection({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Tipo de ayuda <span className="text-marca-dorado">*</span>
+                    Tipo de ayuda <span className="text-red-500">*</span>
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {TIPOS_AYUDA.map((t) => (
@@ -531,7 +538,7 @@ export default function ColaboradoresSection({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Ubicación <span className="text-marca-dorado">*</span>
+                    Ubicación <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -558,27 +565,39 @@ export default function ColaboradoresSection({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Celular
+                    Celular <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
                     value={formTelefono}
-                    onChange={(e) => setFormTelefono(e.target.value)}
+                    onChange={(e) => {
+                      setFormTelefono(e.target.value);
+                      if (e.target.value.trim() || formEmail.trim()) setContactoError("");
+                    }}
                     placeholder="Ej: 04141234567"
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                    aria-invalid={contactoError ? "true" : "false"}
+                    className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${
+                      contactoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"
+                    }`}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={formEmail}
-                    onChange={(e) => setFormEmail(e.target.value)}
+                    onChange={(e) => {
+                      setFormEmail(e.target.value);
+                      if (e.target.value.trim() || formTelefono.trim()) setContactoError("");
+                    }}
                     placeholder="Ej: tu@correo.com"
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                    aria-invalid={contactoError ? "true" : "false"}
+                    className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 ${
+                      contactoError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:ring-marca-azul/40"
+                    }`}
                   />
                 </div>
                 <div>
@@ -593,7 +612,9 @@ export default function ColaboradoresSection({
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
                   />
                 </div>
-                <p className="text-xs text-slate-400">Llena al menos celular o email. Redes son opcionales.</p>
+                <p className={`text-xs ${contactoError ? "text-red-600" : "text-slate-400"}`}>
+                  {contactoError || "Llena al menos celular o email. Redes son opcionales."}
+                </p>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
