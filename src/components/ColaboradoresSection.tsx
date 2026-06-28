@@ -432,6 +432,7 @@ export default function ColaboradoresSection({
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [categoriaError, setCategoriaError] = useState(false);
+  const [subcategoriaError, setSubcategoriaError] = useState("");
 
   // Form
   const [nombre, setNombre] = useState("");
@@ -464,6 +465,7 @@ export default function ColaboradoresSection({
 
   const toggleServicio = (s: string) => {
     setServicios((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+    setSubcategoriaError("");
   };
   const toggleTransportar = (s: string) => {
     setQuePuedesTransportar((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -476,6 +478,7 @@ export default function ColaboradoresSection({
   };
   const toggleApoyoMascota = (s: string) => {
     setTipoApoyoMascota((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+    setSubcategoriaError("");
   };
   const toggleTipoMascota = (s: string) => {
     setTipoMascota((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -562,8 +565,33 @@ export default function ColaboradoresSection({
       }
       return;
     }
+
+    // Validar campos requeridos por categoría
+    const tipo = tipoAyuda[0];
+    if (tipo === "donaciones" && servicios.length === 0) {
+      setSubcategoriaError("Selecciona al menos una opción en ¿Qué donas?");
+      return;
+    }
+    if (tipo === "transporte" && servicios.length === 0) {
+      setSubcategoriaError("Selecciona al menos un tipo de vehículo.");
+      return;
+    }
+    if (tipo === "insumos_medicos" && servicios.length === 0) {
+      setSubcategoriaError("Selecciona al menos un tipo de insumo.");
+      return;
+    }
+    if (tipo === "albergue" && servicios.length === 0) {
+      setSubcategoriaError("Selecciona al menos un servicio disponible.");
+      return;
+    }
+    if (tipo === "mascotas" && tipoApoyoMascota.length === 0) {
+      setSubcategoriaError("Selecciona al menos un tipo de apoyo.");
+      return;
+    }
+
     setCategoriaError(false);
     setContactoError("");
+    setSubcategoriaError("");
 
     setEnviando(true);
     const edit_token = generarToken();
@@ -1172,6 +1200,10 @@ export default function ColaboradoresSection({
                       <input type="text" value={cantidadMascotas} onChange={(e) => setCantidadMascotas(e.target.value)} placeholder="Ej: 2 perros pequeños" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                   </div>
+                )}
+
+                {subcategoriaError && (
+                  <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{subcategoriaError}</p>
                 )}
 
                 <div>
