@@ -138,6 +138,7 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
       alert("Error al enviar solicitud: " + error.message);
       return;
     }
+    logContacto(col.id, "solicitud_albergue" as any);
     setSolicitudEnviada(true);
   };
 
