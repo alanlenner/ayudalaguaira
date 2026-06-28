@@ -74,9 +74,17 @@ function FooterShell({
 
         {/* Site info & disclaimer */}
         <div className="border-t border-white/15 pt-6 text-center space-y-3">
-          <p className="text-marca-azul-claro text-sm font-medium">
-            Venezuela unida — La Guaira
-          </p>
+          <div className="flex items-center justify-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logo-banner/logoguaira.png`}
+              alt="Logo"
+              className="h-8 w-auto opacity-80"
+            />
+            <p className="text-marca-azul-claro text-sm font-medium">
+              Venezuela unida — La Guaira
+            </p>
+          </div>
           <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed">
             Este sitio es un esfuerzo voluntario y ciudadano. No sustituye
             a los organismos de rescate ni a las autoridades competentes.
