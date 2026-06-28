@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network } from "lucide-react";
+import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network, Plus, AlertTriangle } from "lucide-react";
 import Footer from "./Footer";
 
 type Seccion = "desaparecidos" | "colaboradores" | "ayuda" | "red";
@@ -11,6 +11,13 @@ const TABS: Array<{ key: Seccion; label: string; href: string; icon: ReactNode }
   { key: "ayuda", label: "Ayuda", href: "/ayuda", icon: <LifeBuoy className="w-4 h-4" /> },
   { key: "red", label: "Red", href: "/red", icon: <Network className="w-4 h-4" /> },
 ];
+
+const CTA_CONFIG: Record<Seccion, { label: string; href: string; icon: ReactNode }> = {
+  desaparecidos: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
+  colaboradores: { label: "Colaborar", href: "/colaboradores?registro=1", icon: <Plus className="w-5 h-5" /> },
+  ayuda: { label: "Colaborar", href: "/colaboradores?registro=1", icon: <Plus className="w-5 h-5" /> },
+  red: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
+};
 
 type SectionPageLayoutProps = {
   currentSection: Seccion;
@@ -23,8 +30,13 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
   const activeTabIndicatorClass =
     currentSection === "desaparecidos" ? "bg-marca-desaparecidos" : "bg-marca-azul";
 
+  const cta = CTA_CONFIG[currentSection];
+  const leftTabs = TABS.filter(t => t.key === "desaparecidos" || t.key === "colaboradores");
+  const rightTabs = TABS.filter(t => t.key === "ayuda" || t.key === "red");
+
   return (
-    <div className="min-h-screen bg-marca-fondo">
+    <div className="min-h-screen bg-marca-fondo pb-20 sm:pb-0">
+      {/* Top bar — always visible */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <Link href="/desaparecidos" className="flex items-center gap-2">
@@ -38,7 +50,8 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
         </div>
       </div>
 
-      <div className="bg-white border-b border-slate-200">
+      {/* Desktop tabs — hidden on mobile */}
+      <div className="hidden sm:block bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-4">
           <nav className="flex" aria-label="Secciones principales">
             {TABS.map((tab) => (
@@ -117,6 +130,50 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
       {children}
 
       <Footer ayudaHref="/ayuda" reportarHref="/desaparecidos?reportar=1" />
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-slate-200 safe-bottom" aria-label="Navegación móvil">
+        <div className="flex items-end justify-around px-2 pt-1.5 pb-2">
+          {/* Left tabs */}
+          {leftTabs.map((tab) => (
+            <Link
+              key={tab.key}
+              href={tab.href}
+              className={`flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium transition-all ${
+                currentSection === tab.key ? activeTabClass : "text-slate-400"
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">{tab.icon}</span>
+              {tab.label}
+            </Link>
+          ))}
+
+          {/* Center CTA button */}
+          <Link
+            href={cta.href}
+            className="flex flex-col items-center gap-0.5 -mt-5"
+          >
+            <span className="w-14 h-14 rounded-full bg-marca-dorado text-white flex items-center justify-center shadow-lg shadow-marca-dorado/30 ring-4 ring-white">
+              {cta.icon}
+            </span>
+            <span className="text-[10px] font-semibold text-marca-dorado">{cta.label}</span>
+          </Link>
+
+          {/* Right tabs */}
+          {rightTabs.map((tab) => (
+            <Link
+              key={tab.key}
+              href={tab.href}
+              className={`flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium transition-all ${
+                currentSection === tab.key ? activeTabClass : "text-slate-400"
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">{tab.icon}</span>
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

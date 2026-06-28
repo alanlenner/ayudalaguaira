@@ -26,7 +26,7 @@ export default function WhatsAppWidget({
   const hrefConMensaje = construirWhatsappHrefConMensaje(href, mensaje);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-[5.5rem] right-4 z-50 sm:bottom-6 sm:right-6">
       {abierto && (
         <div className="mb-3 w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl shadow-slate-900/15">
           <div className="flex items-center justify-between bg-marca-verde px-5 py-4 text-white">
