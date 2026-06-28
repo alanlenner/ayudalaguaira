@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { APADRINA_CATEGORIAS, apadrinaCategoriaLabel, apadrinaCategoriaEmoji } from "@/lib/apadrina-constants";
 import { Loader2, Check, X, Clock, ChevronRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import ApadrinaOrbita from "@/components/ApadrinaOrbita";
 
 type Solicitante = {
   id: string;
@@ -225,6 +226,29 @@ export default function PanelSolicitante() {
         </h1>
         <p className="text-sm text-slate-500 mt-1">
           Explora las categorías de apoyo disponibles y postúlate solo a las que necesites.
+        </p>
+      </div>
+
+      {/* Visualización orbital */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <ApadrinaOrbita
+          centro={{ nombre: solicitante!.nombre }}
+          nodos={APADRINA_CATEGORIAS.map((cat) => {
+            const tieneActiva = postulaciones.some(
+              (p) => p.categoria === cat.value && (p.estado === "aprobada" || p.estado === "pendiente")
+            );
+            return {
+              id: cat.value,
+              emoji: cat.emoji,
+              label: cat.label,
+              sublabel: cat.label.split(" ").pop(),
+              activo: tieneActiva,
+            };
+          })}
+          tamaño="sm"
+        />
+        <p className="text-center text-[10px] text-slate-400 mt-2">
+          Los nodos conectados indican categorías con postulaciones activas
         </p>
       </div>
 

@@ -1,19 +1,38 @@
 import Link from "next/link";
 import { Heart, HandHeart, Users, Shield } from "lucide-react";
+import ApadrinaOrbita from "@/components/ApadrinaOrbita";
+
+const NODOS_DEMO = [
+  { id: "1", emoji: "🧠", label: "Salud mental", sublabel: "Psicología", activo: true },
+  { id: "2", emoji: "💰", label: "Financiero", sublabel: "Donaciones", activo: true },
+  { id: "3", emoji: "🚗", label: "Transporte", sublabel: "Logística", activo: false },
+  { id: "4", emoji: "🍞", label: "Alimentos", sublabel: "Despensa", activo: true },
+  { id: "5", emoji: "👕", label: "Ropa", sublabel: "Abrigo", activo: false },
+  { id: "6", emoji: "🏠", label: "Albergue", sublabel: "Temporal", activo: true },
+  { id: "7", emoji: "📊", label: "Consejero", sublabel: "Finanzas", activo: false },
+  { id: "8", emoji: "⚖️", label: "Legal", sublabel: "Trámites", activo: true },
+];
 
 export default function ApadrinaLanding() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
       {/* Hero */}
       <div className="bg-gradient-to-b from-[#185FA5] to-[#134b84] text-white rounded-2xl p-6 sm:p-8 text-center space-y-4">
-        <div className="bg-white/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-          <Heart className="w-8 h-8 text-blue-200" />
-        </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-bold leading-tight">
           Apadrina Venezuela
         </h1>
         <p className="text-blue-100 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
           Conectamos a personas que necesitan apoyo con padrinos dispuestos a ayudar.
+        </p>
+
+        <div className="py-4">
+          <ApadrinaOrbita
+            centro={{ nombre: "Tú", emoji: "🙋" }}
+            nodos={NODOS_DEMO}
+          />
+        </div>
+
+        <p className="text-blue-200 text-xs">
           Salud mental, alimentos, albergue, asesoría legal y más.
         </p>
       </div>
