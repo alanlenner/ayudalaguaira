@@ -271,8 +271,8 @@ function ModalDetalleReporte({ pub, onClose, onActualizado }: { pub: Reporte; on
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
-      <div className="relative bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto modal-scroll" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 z-[60] flex items-stretch sm:items-center justify-center sm:px-4" onClick={onClose}>
+      <div className="relative bg-white w-full h-full sm:h-auto sm:max-w-md sm:max-h-[90vh] sm:rounded-2xl overflow-y-auto modal-scroll" onClick={(e) => e.stopPropagation()}>
         {pub.foto_url && (
           <img src={pub.foto_url} alt={`${pub.nombre} ${pub.apellido}`} className="w-full" />
         )}
@@ -710,6 +710,7 @@ export default function DesaparecidosSection({
 
   const cerrarFormulario = () => {
     setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setCodigoPais("+58"); setTelefono(""); setTelefonoTocado(false); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setContinuarConDuplicado(false); setCopiado(false); setBorradorPendiente(null);
+    actualizarFiltros({ reportar: null });
     onFormularioCerrado?.();
   };
 
@@ -967,8 +968,8 @@ export default function DesaparecidosSection({
 
       {/* Modal formulario */}
       {mostrarFormulario && (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center">
-        <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto modal-scroll pb-20 sm:pb-0">
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-stretch sm:items-center justify-center sm:px-4">
+        <div className="bg-white w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[92vh] sm:rounded-2xl overflow-y-auto modal-scroll">
             <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between gap-3 z-10">
               <button
                 onClick={cerrarFormulario}
@@ -1196,9 +1197,20 @@ export default function DesaparecidosSection({
 
       {/* Modal de consentimiento */}
       {mostrarConsentimiento && (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-end sm:items-center justify-center px-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 mb-20 sm:mb-0">
-            <h3 className="text-lg font-medium text-slate-800">Antes de continuar</h3>
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-stretch sm:items-center justify-center sm:px-4">
+          <div className="relative bg-white w-full h-full sm:h-auto sm:max-w-sm sm:rounded-2xl overflow-y-auto p-6 space-y-4">
+            <button
+              onClick={() => {
+                setMostrarConsentimiento(false);
+                actualizarFiltros({ reportar: null });
+                onFormularioCerrado?.();
+              }}
+              className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
+              aria-label="Cerrar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="text-lg font-medium text-slate-800 pr-10">Antes de continuar</h3>
             <p className="text-sm text-slate-500 leading-relaxed">
               Al publicar un reporte, tu <strong>número de contacto será visible públicamente</strong> para
               que cualquier persona con información pueda comunicarse contigo.
@@ -1224,6 +1236,7 @@ export default function DesaparecidosSection({
               <button
                 onClick={() => {
                   setMostrarConsentimiento(false);
+                  actualizarFiltros({ reportar: null });
                   onFormularioCerrado?.();
                 }}
                 className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition"

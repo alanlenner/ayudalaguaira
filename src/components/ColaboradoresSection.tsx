@@ -174,8 +174,8 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
   const esAlbergueCol = col.tipo_ayuda.includes("albergue");
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[60] flex items-end sm:items-center justify-center px-4" onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto pb-20 sm:pb-0" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 z-[60] flex items-stretch sm:items-center justify-center sm:px-4" onClick={onClose}>
+      <div className="bg-white w-full h-full sm:h-auto sm:max-w-md sm:max-h-[90vh] sm:rounded-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 space-y-3">
           <div className="flex items-start justify-between">
             <h2 className="text-lg font-semibold text-slate-800">{col.nombre}</h2>
@@ -429,6 +429,7 @@ export default function ColaboradoresSection({
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [categoriaError, setCategoriaError] = useState(false);
 
   // Form
   const [nombre, setNombre] = useState("");
@@ -524,11 +525,16 @@ export default function ColaboradoresSection({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (tipoAyuda.length === 0) {
+      setCategoriaError(true);
+    }
     if (!nombre.trim() || !ubicacion.trim() || tipoAyuda.length === 0 || (!formTelefono.trim() && !formEmail.trim())) {
-      setContactoError("Indica al menos un dato de contacto: celular o email.");
-      alert("Completa nombre, tipo de ayuda, ubicación y al menos un contacto (celular o email)");
+      if (!formTelefono.trim() && !formEmail.trim()) {
+        setContactoError("Indica al menos un dato de contacto: celular o email.");
+      }
       return;
     }
+    setCategoriaError(false);
     setContactoError("");
 
     setEnviando(true);
@@ -723,8 +729,8 @@ export default function ColaboradoresSection({
 
       {/* Modal formulario */}
       {mostrarFormulario && (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto pb-20 sm:pb-0">
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-stretch sm:items-center justify-center sm:px-4">
+          <div className="bg-white w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[92vh] sm:rounded-2xl overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
               <h2 className="font-medium text-lg">
                 {tokenGenerado ? "Registro exitoso" : "Quiero ayudar"}
@@ -801,17 +807,22 @@ export default function ColaboradoresSection({
                       <button
                         key={t.value}
                         type="button"
-                        onClick={() => toggleTipoAyuda(t.value)}
+                        onClick={() => { toggleTipoAyuda(t.value); setCategoriaError(false); }}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           tipoAyuda.includes(t.value)
                             ? "bg-marca-azul text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            : categoriaError
+                              ? "bg-red-50 text-red-600 ring-1 ring-red-300"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
                         {t.label}
                       </button>
                     ))}
                   </div>
+                  {categoriaError && (
+                    <p className="text-xs text-red-500 mt-1.5">Selecciona al menos una categoría de ayuda.</p>
+                  )}
                 </div>
 
                 <div>
