@@ -22,12 +22,12 @@ export default function ApadrinaLanding() {
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
 
         <div className="relative p-6 sm:p-8 text-center space-y-5">
-          {/* Logo */}
+          {/* Banner */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logo-banner/logoguaira.png`}
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logo-banner/bannerguaira.png`}
             alt="Apadrina Venezuela"
-            className="h-14 sm:h-16 w-auto mx-auto drop-shadow-lg"
+            className="w-full max-w-md mx-auto rounded-xl drop-shadow-lg"
           />
 
           <div className="space-y-2">
