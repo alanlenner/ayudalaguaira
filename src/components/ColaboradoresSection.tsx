@@ -1022,26 +1022,6 @@ export default function ColaboradoresSection({
                   </div>
                 )}
 
-                {tipoAyuda.includes("alimentos") && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
-                    <p className="text-xs font-semibold text-green-800">Sobre los alimentos</p>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué ofreces?</label>
-                      <div className="flex flex-wrap gap-2">
-                        {["Comida preparada", "Despensa", "Agua potable", "Fórmula infantil"].map((s) => (
-                          <button key={s} type="button" onClick={() => toggleServicio(s)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad aproximada (raciones/personas)</label>
-                      <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: 20 raciones, para 10 personas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
-                    </div>
-                  </div>
-                )}
 
                 {tipoAyuda.includes("transporte") && (
                   <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-3">
@@ -1083,22 +1063,6 @@ export default function ColaboradoresSection({
                   </div>
                 )}
 
-                {tipoAyuda.includes("ropa_abrigo") && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
-                    <p className="text-xs font-semibold text-orange-800">Sobre la ropa / abrigo</p>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tienes disponible?</label>
-                      <div className="flex flex-wrap gap-2">
-                        {["Ropa adultos", "Ropa niños", "Cobijas", "Zapatos", "Ropa de bebé"].map((s) => (
-                          <button key={s} type="button" onClick={() => toggleServicio(s)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-orange-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {tipoAyuda.includes("insumos_medicos") && (
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
