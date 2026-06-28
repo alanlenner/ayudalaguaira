@@ -86,16 +86,12 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
       {currentSection === "desaparecidos" && (
         <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white">
           <div className="max-w-3xl mx-auto px-4 pt-8 pb-8">
-            <div className="flex items-start gap-3 mb-6">
-              <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-5 h-5 text-marca-azul-claro" />
-              </div>
-              <div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
-                  La sociedad venezolana se reconstruye con el apoyo de todos.
-                </h2>
-              </div>
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logo-banner/bannerguaira.png`}
+              alt="Venezuela unida — La Guaira"
+              className="w-full max-w-md mx-auto mb-6 rounded-xl"
+            />
 
             <div className="flex flex-col gap-2 mb-8">
               <Link
