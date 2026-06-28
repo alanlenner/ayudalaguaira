@@ -80,9 +80,30 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
   );
 }
 
+const TIPOS_CON_SOLICITUD = ["albergue", "alimentos", "transporte", "ropa_abrigo", "insumos_medicos", "mano_obra"];
+
+const PLACEHOLDER_DESC: Record<string, string> = {
+  albergue: "Ej: Casa dañada, necesitamos donde quedarnos...",
+  alimentos: "Ej: Familia de 4, no tenemos acceso a comida...",
+  transporte: "Ej: Necesito ir de Caraballeda a Caracas...",
+  ropa_abrigo: "Ej: Perdimos todo, necesitamos ropa para 3 niños...",
+  insumos_medicos: "Ej: Necesito insulina, tensiómetro...",
+  mano_obra: "Ej: Necesito ayuda para limpiar escombros...",
+};
+
+const LABEL_SOLICITAR: Record<string, string> = {
+  albergue: "Solicitar albergue",
+  alimentos: "Solicitar alimentos",
+  transporte: "Solicitar transporte",
+  ropa_abrigo: "Solicitar ropa / abrigo",
+  insumos_medicos: "Solicitar insumos médicos",
+  mano_obra: "Solicitar mano de obra",
+};
+
 function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: () => void }) {
   const limpio = col.telefono ? limpiarTelefono(col.telefono) : "";
-  const esAlbergueCol = col.tipo_ayuda.includes("albergue");
+  const tipoSolicitud = col.tipo_ayuda.find(t => TIPOS_CON_SOLICITUD.includes(t));
+  const usaSolicitud = !!tipoSolicitud;
   const [mostrarSolicitud, setMostrarSolicitud] = useState(false);
   const [solicitudEnviada, setSolicitudEnviada] = useState(false);
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
@@ -91,7 +112,8 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
   const [solZona, setSolZona] = useState("");
   const [solPersonas, setSolPersonas] = useState("");
   const [solDescripcion, setSolDescripcion] = useState("");
-  const [solTipo, setSolTipo] = useState(col.tipo_ayuda[0] || "");
+  const [solTipo, setSolTipo] = useState(tipoSolicitud || col.tipo_ayuda[0] || "");
+  const [solDestino, setSolDestino] = useState("");
 
   const formularioValido = solNombre.trim() && solTelefono.trim() && solZona.trim();
 
@@ -103,6 +125,7 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
       `*Teléfono:* ${solTelefono.trim()}\n` +
       `*Zona:* ${solZona.trim()}\n` +
       (solPersonas.trim() ? `*Personas:* ${solPersonas.trim()}\n` : "") +
+      (solDestino.trim() ? `*Destino:* ${solDestino.trim()}\n` : "") +
       (solDescripcion.trim() ? `*Situación:* ${solDescripcion.trim()}\n` : "") +
       `\n(Enviado desde ayudalaguaira.com)`;
   };
@@ -122,25 +145,33 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
     window.location.href = `mailto:${col.email}?subject=${subject}&body=${body}`;
   };
 
-  const enviarSolicitudAlbergue = async () => {
+  const enviarSolicitud = async () => {
     if (!formularioValido) return;
     setEnviandoSolicitud(true);
-    const { error } = await supabase.from("solicitudes_albergue").insert({
+    const desc = [
+      solDescripcion.trim(),
+      solDestino.trim() ? `Destino: ${solDestino.trim()}` : "",
+    ].filter(Boolean).join(" | ") || null;
+
+    const { error } = await supabase.from("solicitudes_ayuda").insert({
       colaborador_id: col.id,
+      tipo_ayuda: solTipo,
       nombre: solNombre.trim(),
       telefono: solTelefono.trim(),
       zona: solZona.trim(),
       personas: solPersonas.trim() ? parseInt(solPersonas) : null,
-      descripcion: solDescripcion.trim() || null,
+      descripcion: desc,
     });
     setEnviandoSolicitud(false);
     if (error) {
       alert("Error al enviar solicitud: " + error.message);
       return;
     }
-    logContacto(col.id, "solicitud_albergue" as any);
+    logContacto(col.id, "solicitud" as any);
     setSolicitudEnviada(true);
   };
+
+  const esAlbergueCol = col.tipo_ayuda.includes("albergue");
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
@@ -223,8 +254,7 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
             </div>
           ) : !mostrarSolicitud ? (
             <>
-              {/* Solo mostrar contacto directo si NO es albergue */}
-              {!esAlbergueCol && (
+              {!usaSolicitud && (
                 <div className="flex gap-2 pt-2 flex-wrap">
                   {col.telefono && (
                     <>
@@ -246,9 +276,9 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
                   )}
                 </div>
               )}
-              {esAlbergueCol && (
+              {usaSolicitud && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
-                  Para proteger la privacidad del voluntario, el contacto se realiza mediante solicitud. El voluntario te llamará para coordinar.
+                  El contacto se realiza mediante solicitud. El voluntario te contactará por teléfono para coordinar.
                 </div>
               )}
               <button
@@ -256,19 +286,29 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
                 className="w-full py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-2"
               >
                 <HandHeart className="w-4 h-4" />
-                {esAlbergueCol ? "Solicitar albergue" : "Solicitar ayuda"}
+                {usaSolicitud ? (LABEL_SOLICITAR[tipoSolicitud!] || "Solicitar ayuda") : "Solicitar ayuda"}
               </button>
             </>
           ) : (
             <div className="space-y-3 pt-2">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                 <p className="text-xs text-amber-800 font-medium">
-                  {esAlbergueCol
+                  {usaSolicitud
                     ? "Completa tus datos. El voluntario recibirá tu solicitud y te contactará por teléfono."
                     : `Completa tus datos para que ${col.nombre} pueda ayudarte mejor`}
                 </p>
               </div>
-              {col.tipo_ayuda.length > 1 && !esAlbergueCol && (
+              {col.tipo_ayuda.filter(t => TIPOS_CON_SOLICITUD.includes(t)).length > 1 && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de ayuda necesitas?</label>
+                  <select value={solTipo} onChange={(e) => setSolTipo(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40">
+                    {col.tipo_ayuda.filter(t => TIPOS_CON_SOLICITUD.includes(t)).map((t) => (
+                      <option key={t} value={t}>{tipoLabel(t)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {!usaSolicitud && col.tipo_ayuda.length > 1 && (
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de ayuda necesitas?</label>
                   <select value={solTipo} onChange={(e) => setSolTipo(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40">
@@ -290,17 +330,27 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
                 <label className="block text-xs font-medium text-slate-700 mb-1">Zona donde estás *</label>
                 <input type="text" value={solZona} onChange={(e) => setSolZona(e.target.value)} placeholder="Ej: Caraballeda, sector..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
+              {(solTipo === "albergue" || solTipo === "alimentos" || solTipo === "ropa_abrigo") && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad de personas</label>
+                  <input type="number" value={solPersonas} onChange={(e) => setSolPersonas(e.target.value)} placeholder="Ej: 4" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                </div>
+              )}
+              {solTipo === "transporte" && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">¿A dónde necesitas ir?</label>
+                  <input type="text" value={solDestino} onChange={(e) => setSolDestino(e.target.value)} placeholder="Ej: Hospital Pérez Carreño, Caracas..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                </div>
+              )}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad de personas</label>
-                <input type="number" value={solPersonas} onChange={(e) => setSolPersonas(e.target.value)} placeholder="Ej: 4" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  {solTipo === "insumos_medicos" ? "¿Qué insumos necesitas?" : solTipo === "mano_obra" ? "¿Qué tipo de trabajo necesitas?" : "Describe tu situación"}
+                </label>
+                <textarea value={solDescripcion} onChange={(e) => setSolDescripcion(e.target.value)} rows={2} placeholder={PLACEHOLDER_DESC[solTipo] || "Describe brevemente tu situación..."} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Describe tu situación</label>
-                <textarea value={solDescripcion} onChange={(e) => setSolDescripcion(e.target.value)} rows={2} placeholder="Ej: Casa dañada, necesitamos donde quedarnos..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" />
-              </div>
-              {esAlbergueCol ? (
+              {usaSolicitud ? (
                 <button
-                  onClick={enviarSolicitudAlbergue}
+                  onClick={enviarSolicitud}
                   disabled={!formularioValido || enviandoSolicitud}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition disabled:opacity-40"
                 >
