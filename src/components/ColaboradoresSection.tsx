@@ -452,6 +452,11 @@ export default function ColaboradoresSection({
   const [cantidadAprox, setCantidadAprox] = useState("");
   const [vigentes, setVigentes] = useState<string[]>([]);
   const [zonaAlbergue, setZonaAlbergue] = useState("");
+  const [tipoApoyoMascota, setTipoApoyoMascota] = useState<string[]>([]);
+  const [tiempoResguardo, setTiempoResguardo] = useState("");
+  const [tipoMascota, setTipoMascota] = useState<string[]>([]);
+  const [especificaMascota, setEspecificaMascota] = useState("");
+  const [cantidadMascotas, setCantidadMascotas] = useState("");
 
   const esAlbergue = tipoAyuda.includes("albergue");
 
@@ -466,6 +471,12 @@ export default function ColaboradoresSection({
   };
   const toggleVigentes = (s: string) => {
     setVigentes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
+  const toggleApoyoMascota = (s: string) => {
+    setTipoApoyoMascota((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
+  const toggleTipoMascota = (s: string) => {
+    setTipoMascota((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
   };
 
   const cargarConteos = useCallback(async () => {
@@ -567,6 +578,11 @@ export default function ColaboradoresSection({
     if (quePuedesTransportar.length > 0) descParts.push(`Transporta: ${quePuedesTransportar.join(", ")}`);
     if (metodoEntrega.length > 0) descParts.push(`Entrega: ${metodoEntrega.join(", ")}`);
     if (vigentes.length > 0) descParts.push(`Vigentes: ${vigentes.join(", ")}`);
+    if (tipoApoyoMascota.length > 0) descParts.push(`Apoyo mascota: ${tipoApoyoMascota.join(", ")}`);
+    if (tiempoResguardo.trim()) descParts.push(`Tiempo resguardo: ${tiempoResguardo.trim()}`);
+    if (tipoMascota.length > 0) descParts.push(`Mascotas: ${tipoMascota.join(", ")}`);
+    if (especificaMascota.trim()) descParts.push(`Especifica animales: ${especificaMascota.trim()}`);
+    if (cantidadMascotas.trim()) descParts.push(`Cantidad mascotas: ${cantidadMascotas.trim()}`);
 
     const descFinal = descParts.length > 0 ? descParts.join(" | ") : null;
 
@@ -1148,6 +1164,46 @@ export default function ColaboradoresSection({
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">¿Cuántas personas puedes llevar?</label>
                       <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: solo yo, equipo de 5 personas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("mascotas") && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-yellow-800">Sobre el apoyo a mascotas</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de apoyo ofreces? <span className="text-red-500">*</span></label>
+                      <p className="text-[10px] text-slate-400 mb-1">Selecciona una o más opciones</p>
+                      <div className="flex flex-wrap gap-2">
+                        {["Resguardo temporal", "Alimento", "Atención veterinaria", "Transporte de mascotas", "Medicamentos / Insumos", "Otro"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleApoyoMascota(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${tipoApoyoMascota.includes(s) ? "bg-yellow-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cuánto tiempo puedes resguardarlo?</label>
+                      <input type="text" value={tiempoResguardo} onChange={(e) => setTiempoResguardo(e.target.value)} placeholder="Ej: 1 semana, indefinido" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de mascotas puedes recibir?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Perros", "Gatos", "Otros animales"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleTipoMascota(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${tipoMascota.includes(s) ? "bg-yellow-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                      {tipoMascota.includes("Otros animales") && (
+                        <input type="text" value={especificaMascota} onChange={(e) => setEspecificaMascota(e.target.value)} placeholder="Especifica: ej. aves, conejos, reptiles..." className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cuántas mascotas puedes recibir?</label>
+                      <input type="text" value={cantidadMascotas} onChange={(e) => setCantidadMascotas(e.target.value)} placeholder="Ej: 2 perros pequeños" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                   </div>
                 )}
