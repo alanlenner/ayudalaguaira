@@ -84,7 +84,7 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
               </div>
               <div>
                 <h2 className="font-serif text-xl sm:text-2xl font-bold leading-[1.2] mb-2">
-                  Estás a salvo. Respira.
+                  La sociedad venezolana se reconstruye con el apoyo de todos.
                 </h2>
               </div>
             </div>
@@ -133,13 +133,12 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-slate-200 safe-bottom" aria-label="Navegación móvil">
-        <div className="flex items-end justify-around px-2 pt-1.5 pb-2">
-          {/* Left tabs */}
+        <div className="grid grid-cols-5 items-end pt-1.5 pb-2">
           {leftTabs.map((tab) => (
             <Link
               key={tab.key}
               href={tab.href}
-              className={`flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium transition-all ${
+              className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-medium transition-all ${
                 currentSection === tab.key ? activeTabClass : "text-slate-400"
               }`}
             >
@@ -148,23 +147,21 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
             </Link>
           ))}
 
-          {/* Center CTA button */}
           <Link
             href={cta.href}
             className="flex flex-col items-center gap-0.5 -mt-5"
           >
-            <span className="w-14 h-14 rounded-full bg-marca-dorado text-white flex items-center justify-center shadow-lg shadow-marca-dorado/30 ring-4 ring-white">
+            <span className="w-14 h-14 rounded-full bg-white text-marca-azul border-2 border-marca-azul flex items-center justify-center shadow-lg shadow-marca-azul/20 ring-4 ring-white">
               {cta.icon}
             </span>
-            <span className="text-[10px] font-semibold text-marca-dorado">{cta.label}</span>
+            <span className="text-[10px] font-semibold text-marca-azul">{cta.label}</span>
           </Link>
 
-          {/* Right tabs */}
           {rightTabs.map((tab) => (
             <Link
               key={tab.key}
               href={tab.href}
-              className={`flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium transition-all ${
+              className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-medium transition-all ${
                 currentSection === tab.key ? activeTabClass : "text-slate-400"
               }`}
             >
