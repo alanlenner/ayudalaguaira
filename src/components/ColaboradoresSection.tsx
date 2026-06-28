@@ -519,7 +519,7 @@ export default function ColaboradoresSection({
 
   const toggleTipoAyuda = (val: string) => {
     setTipoAyuda((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+      prev.includes(val) ? [] : [val]
     );
   };
 
