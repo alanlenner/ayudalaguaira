@@ -967,8 +967,8 @@ export default function DesaparecidosSection({
 
       {/* Modal formulario */}
       {mostrarFormulario && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-        <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto modal-scroll">
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center">
+        <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto modal-scroll pb-20 sm:pb-0">
             <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between gap-3 z-10">
               <button
                 onClick={cerrarFormulario}
@@ -1196,8 +1196,8 @@ export default function DesaparecidosSection({
 
       {/* Modal de consentimiento */}
       {mostrarConsentimiento && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-end sm:items-center justify-center px-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 mb-20 sm:mb-0">
             <h3 className="text-lg font-medium text-slate-800">Antes de continuar</h3>
             <p className="text-sm text-slate-500 leading-relaxed">
               Al publicar un reporte, tu <strong>número de contacto será visible públicamente</strong> para
