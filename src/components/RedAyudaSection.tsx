@@ -26,6 +26,11 @@ const RECURSOS: RecursoRed[] = [
     url: "https://hospitalesenvenezuela.com/",
     embebible: false,
   },
+  {
+    titulo: "Organizaciones — Ayuda en Camino",
+    descripcion: "Directorio de organizaciones que brindan ayuda, desde la plataforma Ayuda en Camino.",
+    url: "https://ayudaencamino.com/organizaciones",
+  },
 ];
 
 export default function RedAyudaSection() {
