@@ -17,24 +17,58 @@ export default function ApadrinaLanding() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
       {/* Hero */}
-      <div className="bg-gradient-to-b from-[#185FA5] to-[#134b84] text-white rounded-2xl p-6 sm:p-8 text-center space-y-4">
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold leading-tight">
-          Apadrina Venezuela
-        </h1>
-        <p className="text-blue-100 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-          Conectamos a personas que necesitan apoyo con padrinos dispuestos a ayudar.
-        </p>
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-[#185FA5] to-[#134b84] text-white rounded-2xl">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
 
-        <div className="py-4">
-          <ApadrinaOrbita
-            centro={{ nombre: "Tú", emoji: "🙋" }}
-            nodos={NODOS_DEMO}
+        <div className="relative p-6 sm:p-8 text-center space-y-5">
+          {/* Logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logo-banner/logoguaira.png`}
+            alt="Apadrina Venezuela"
+            className="h-14 sm:h-16 w-auto mx-auto drop-shadow-lg"
           />
-        </div>
 
-        <p className="text-blue-200 text-xs">
-          Salud mental, alimentos, albergue, asesoría legal y más.
-        </p>
+          <div className="space-y-2">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
+              Apadrina Venezuela
+            </h1>
+            <p className="text-blue-100/90 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+              Conectamos a quienes necesitan apoyo con padrinos dispuestos a ayudar. Tú eliges cómo.
+            </p>
+          </div>
+
+          {/* Orbita */}
+          <div className="py-2">
+            <ApadrinaOrbita
+              centro={{ nombre: "Tú", emoji: "🙋" }}
+              nodos={NODOS_DEMO}
+            />
+          </div>
+
+          <p className="text-blue-200/60 text-[11px]">
+            Salud mental · alimentos · albergue · asesoría legal · y más
+          </p>
+
+          {/* CTAs dentro del hero */}
+          <div className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto pt-1">
+            <Link
+              href="/apadrina/registro-solicitante"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white text-[#185FA5] rounded-xl text-sm font-bold hover:bg-blue-50 transition shadow-lg shadow-black/10"
+            >
+              <Heart className="w-4 h-4" />
+              Necesito apoyo
+            </Link>
+            <Link
+              href="/apadrina/registro-patrocinador"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#BA7517] text-white rounded-xl text-sm font-bold hover:opacity-90 transition shadow-lg shadow-black/10"
+            >
+              <HandHeart className="w-4 h-4" />
+              Quiero ser padrino
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Cómo funciona */}
@@ -63,24 +97,6 @@ export default function ApadrinaLanding() {
             <p className="text-xs text-slate-500">El padrino aprueba la postulación y coordinan directamente entre ambos.</p>
           </div>
         </div>
-      </div>
-
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Link
-          href="/apadrina/registro-solicitante"
-          className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#185FA5] text-white rounded-xl text-sm font-semibold hover:opacity-90 transition"
-        >
-          <Heart className="w-4 h-4" />
-          Necesito apoyo
-        </Link>
-        <Link
-          href="/apadrina/registro-patrocinador"
-          className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#BA7517] text-white rounded-xl text-sm font-semibold hover:opacity-90 transition"
-        >
-          <HandHeart className="w-4 h-4" />
-          Quiero ser padrino
-        </Link>
       </div>
 
       {/* Ya tienes cuenta */}
