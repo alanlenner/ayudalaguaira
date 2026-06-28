@@ -288,6 +288,17 @@ export default function ColaboradoresSection({
   const [formRedes, setFormRedes] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [contactoError, setContactoError] = useState("");
+  // Campos específicos albergue
+  const [capacidad, setCapacidad] = useState("");
+  const [aceptaMascotas, setAceptaMascotas] = useState(false);
+  const [servicios, setServicios] = useState<string[]>([]);
+  const [duracionEstadia, setDuracionEstadia] = useState("");
+
+  const esAlbergue = tipoAyuda.includes("albergue");
+
+  const toggleServicio = (s: string) => {
+    setServicios((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
 
   const cargarConteos = useCallback(async () => {
     const { data } = await supabase
@@ -371,6 +382,23 @@ export default function ColaboradoresSection({
     setEnviando(true);
     const edit_token = generarToken();
 
+    const metaAlbergue = esAlbergue ? {
+      capacidad: capacidad.trim() || null,
+      acepta_mascotas: aceptaMascotas,
+      servicios: servicios.length > 0 ? servicios : null,
+      duracion_estadia: duracionEstadia.trim() || null,
+    } : null;
+
+    const descFinal = esAlbergue
+      ? [
+          descripcion.trim(),
+          capacidad.trim() ? `Capacidad: ${capacidad.trim()} personas` : "",
+          aceptaMascotas ? "Acepta mascotas" : "",
+          servicios.length > 0 ? `Servicios: ${servicios.join(", ")}` : "",
+          duracionEstadia.trim() ? `Estadía máx: ${duracionEstadia.trim()}` : "",
+        ].filter(Boolean).join(" | ")
+      : descripcion.trim() || null;
+
     const { error } = await supabase.from("colaboradores").insert({
       nombre: nombre.trim(),
       tipo_ayuda: tipoAyuda,
@@ -379,7 +407,7 @@ export default function ColaboradoresSection({
       telefono: formTelefono.trim() || null,
       email: formEmail.trim() || null,
       redes: formRedes.trim() || null,
-      descripcion: descripcion.trim() || null,
+      descripcion: descFinal || null,
       edit_token,
       activo: true,
     });
@@ -411,6 +439,10 @@ export default function ColaboradoresSection({
     setFormRedes("");
     setDescripcion("");
     setContactoError("");
+    setCapacidad("");
+    setAceptaMascotas(false);
+    setServicios([]);
+    setDuracionEstadia("");
     setCopiado(false);
     onFormularioCerrado?.();
   };
@@ -716,6 +748,61 @@ export default function ColaboradoresSection({
                   {contactoError || "Llena al menos celular o email. Redes son opcionales."}
                 </p>
 
+                {esAlbergue && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-blue-800">Datos del albergue</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Capacidad (personas)</label>
+                      <input
+                        type="number"
+                        value={capacidad}
+                        onChange={(e) => setCapacidad(e.target.value)}
+                        placeholder="Ej: 4"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Duración máxima de estadía</label>
+                      <input
+                        type="text"
+                        value={duracionEstadia}
+                        onChange={(e) => setDuracionEstadia(e.target.value)}
+                        placeholder="Ej: 1 semana, 3 días, indefinido"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Servicios disponibles</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Agua", "Luz", "Internet", "Cocina", "Baño privado"].map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                              servicios.includes(s)
+                                ? "bg-marca-azul text-white"
+                                : "bg-white text-slate-600 border border-slate-200"
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="mascotas"
+                        checked={aceptaMascotas}
+                        onChange={(e) => setAceptaMascotas(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 text-marca-azul focus:ring-marca-azul/40"
+                      />
+                      <label htmlFor="mascotas" className="text-xs text-slate-700">Acepta mascotas</label>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Descripción
@@ -723,7 +810,7 @@ export default function ColaboradoresSection({
                   <textarea
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Cómo puedes ayudar, experiencia relevante..."
+                    placeholder={esAlbergue ? "Detalles adicionales del espacio..." : "Cómo puedes ayudar, experiencia relevante..."}
                     rows={2}
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none"
                   />
