@@ -1,13 +1,16 @@
-export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Hospital Pérez Carreño", "Domingo Luciani", "Otro"] as const;
+export const ZONAS_DB = ["Naiguatá", "Caraballeda", "Catia La Mar", "Maiquetía", "Tanaguarena", "Macuto", "Hospital Pérez Carreño", "Domingo Luciani", "Hospital G. de Lidice", "Otro"] as const;
 export type ZonaDB = (typeof ZONAS_DB)[number];
 
 export const TIPOS_AYUDA = [
   { value: "salud_mental", label: "Salud mental / Psicología" },
-  { value: "call_center", label: "Call center" },
-  { value: "canalizar_reportes", label: "Canalizar reportes" },
-  { value: "traduccion", label: "Traducción" },
-  { value: "logistica_local", label: "Logística local" },
+  { value: "albergue", label: "Albergue / Habitación temporal" },
+  { value: "alimentos", label: "Alimentos / Agua" },
   { value: "transporte", label: "Transporte" },
+  { value: "ropa_abrigo", label: "Ropa / Abrigo" },
+  { value: "insumos_medicos", label: "Insumos médicos" },
+  { value: "mano_obra", label: "Mano de obra / Limpieza" },
+  { value: "donaciones", label: "Donaciones / Recaudación" },
+  { value: "logistica", label: "Logística / Distribución" },
   { value: "otro", label: "Otro" },
 ] as const;
 
