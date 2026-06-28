@@ -82,6 +82,43 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
 
 function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: () => void }) {
   const limpio = col.telefono ? limpiarTelefono(col.telefono) : "";
+  const [mostrarSolicitud, setMostrarSolicitud] = useState(false);
+  const [solNombre, setSolNombre] = useState("");
+  const [solTelefono, setSolTelefono] = useState("");
+  const [solZona, setSolZona] = useState("");
+  const [solPersonas, setSolPersonas] = useState("");
+  const [solDescripcion, setSolDescripcion] = useState("");
+  const [solTipo, setSolTipo] = useState(col.tipo_ayuda[0] || "");
+
+  const formularioValido = solNombre.trim() && solTelefono.trim() && solZona.trim();
+
+  const construirMensaje = () => {
+    const tipo = tipoLabel(solTipo);
+    return `Hola ${col.nombre}, necesito ayuda.\n\n` +
+      `*Solicitud:* ${tipo}\n` +
+      `*Nombre:* ${solNombre.trim()}\n` +
+      `*Teléfono:* ${solTelefono.trim()}\n` +
+      `*Zona:* ${solZona.trim()}\n` +
+      (solPersonas.trim() ? `*Personas:* ${solPersonas.trim()}\n` : "") +
+      (solDescripcion.trim() ? `*Situación:* ${solDescripcion.trim()}\n` : "") +
+      `\n(Enviado desde ayudalaguaira.com)`;
+  };
+
+  const enviarWhatsApp = () => {
+    if (!col.telefono) return;
+    logContacto(col.id, "whatsapp");
+    const url = waLink(col.telefono) + `&text=${encodeURIComponent(construirMensaje())}`;
+    window.open(url, "_blank");
+  };
+
+  const enviarEmail = () => {
+    if (!col.email) return;
+    logContacto(col.id, "email");
+    const subject = encodeURIComponent(`Solicitud de ayuda - ${tipoLabel(solTipo)}`);
+    const body = encodeURIComponent(construirMensaje());
+    window.location.href = `mailto:${col.email}?subject=${subject}&body=${body}`;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -109,27 +146,93 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
           {col.descripcion && (
             <p className="text-sm text-slate-600">{col.descripcion}</p>
           )}
-          <div className="flex gap-2 pt-2 flex-wrap">
-            {col.telefono && (
-              <>
-                <a href={`tel:${limpio}`} onClick={() => logContacto(col.id, "llamada")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
-                  <Phone className="w-4 h-4" />
-                  Llamar
-                </a>
-                <a href={waLink(col.telefono)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(col.id, "whatsapp")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
-                </a>
-              </>
-            )}
-            {col.email && (
-              <a href={`mailto:${col.email}`} onClick={() => logContacto(col.id, "email")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-700 text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
-                <Mail className="w-4 h-4" />
-                Email
-              </a>
-            )}
-          </div>
-          {col.redes && (
+
+          {!mostrarSolicitud ? (
+            <>
+              <div className="flex gap-2 pt-2 flex-wrap">
+                {col.telefono && (
+                  <>
+                    <a href={`tel:${limpio}`} onClick={() => logContacto(col.id, "llamada")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-azul text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                      <Phone className="w-4 h-4" />
+                      Llamar
+                    </a>
+                    <a href={waLink(col.telefono)} target="_blank" rel="noopener noreferrer" onClick={() => logContacto(col.id, "whatsapp")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                      <MessageCircle className="w-4 h-4" />
+                      WhatsApp
+                    </a>
+                  </>
+                )}
+                {col.email && (
+                  <a href={`mailto:${col.email}`} onClick={() => logContacto(col.id, "email")} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-700 text-white rounded-xl text-sm font-medium hover:opacity-90 transition">
+                    <Mail className="w-4 h-4" />
+                    Email
+                  </a>
+                )}
+              </div>
+              <button
+                onClick={() => setMostrarSolicitud(true)}
+                className="w-full py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-2"
+              >
+                <HandHeart className="w-4 h-4" />
+                Solicitar ayuda
+              </button>
+            </>
+          ) : (
+            <div className="space-y-3 pt-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p className="text-xs text-amber-800 font-medium">Completa tus datos para que {col.nombre} pueda ayudarte mejor</p>
+              </div>
+              {col.tipo_ayuda.length > 1 && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de ayuda necesitas?</label>
+                  <select value={solTipo} onChange={(e) => setSolTipo(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40">
+                    {col.tipo_ayuda.map((t) => (
+                      <option key={t} value={t}>{tipoLabel(t)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Tu nombre *</label>
+                <input type="text" value={solNombre} onChange={(e) => setSolNombre(e.target.value)} placeholder="Nombre completo" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Tu teléfono *</label>
+                <input type="tel" value={solTelefono} onChange={(e) => setSolTelefono(e.target.value)} placeholder="Ej: 04141234567" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Zona donde estás *</label>
+                <input type="text" value={solZona} onChange={(e) => setSolZona(e.target.value)} placeholder="Ej: Caraballeda, sector..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad de personas</label>
+                <input type="number" value={solPersonas} onChange={(e) => setSolPersonas(e.target.value)} placeholder="Ej: 4" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Describe tu situación</label>
+                <textarea value={solDescripcion} onChange={(e) => setSolDescripcion(e.target.value)} rows={2} placeholder="Ej: Casa dañada, necesitamos donde quedarnos..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none" />
+              </div>
+              <div className="flex gap-2 pt-1">
+                {col.telefono && (
+                  <button onClick={enviarWhatsApp} disabled={!formularioValido} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-marca-verde text-white rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40">
+                    <MessageCircle className="w-4 h-4" />
+                    Enviar por WhatsApp
+                  </button>
+                )}
+                {col.email && (
+                  <button onClick={enviarEmail} disabled={!formularioValido} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-700 text-white rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40">
+                    <Mail className="w-4 h-4" />
+                    Enviar por Email
+                  </button>
+                )}
+              </div>
+              <button onClick={() => setMostrarSolicitud(false)} className="w-full text-slate-400 text-xs py-1 hover:text-slate-600 transition">
+                ← Volver
+              </button>
+            </div>
+          )}
+
+          {col.redes && !mostrarSolicitud && (
             <p className="text-xs text-slate-500 pt-1">Redes: <a href={col.redes.startsWith("http") ? col.redes : `https://instagram.com/${col.redes.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="text-marca-azul underline">{col.redes}</a></p>
           )}
         </div>
