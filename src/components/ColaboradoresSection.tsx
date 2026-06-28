@@ -361,33 +361,30 @@ export default function ColaboradoresSection({
       </div>
 
       {/* Filtro por tipo */}
-      <div className="relative mt-3">
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-slate-50 to-transparent" />
-        <div className="flex gap-2 overflow-x-auto pb-1 pr-8 scrollbar-hide">
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button
+          onClick={() => actualizarFiltros({ tipo: null, pagina: null })}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            filtroTipo === "todos"
+              ? "bg-marca-azul text-white"
+              : "bg-white text-slate-600 border border-slate-200"
+          }`}
+        >
+          Todos
+        </button>
+        {TIPOS_AYUDA.map((t) => (
           <button
-            onClick={() => actualizarFiltros({ tipo: null, pagina: null })}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              filtroTipo === "todos"
+            key={t.value}
+            onClick={() => actualizarFiltros({ tipo: t.value, pagina: null })}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              filtroTipo === t.value
                 ? "bg-marca-azul text-white"
                 : "bg-white text-slate-600 border border-slate-200"
             }`}
           >
-            Todos
+            {t.label}
           </button>
-          {TIPOS_AYUDA.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => actualizarFiltros({ tipo: t.value, pagina: null })}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                filtroTipo === t.value
-                  ? "bg-marca-azul text-white"
-                  : "bg-white text-slate-600 border border-slate-200"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* Feed */}
