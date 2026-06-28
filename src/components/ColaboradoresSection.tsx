@@ -420,6 +420,12 @@ export default function ColaboradoresSection({
   useEffect(() => {
     if (abrirFormulario) setMostrarFormulario(true);
   }, [abrirFormulario]);
+
+  useEffect(() => {
+    const abrir = () => setMostrarFormulario(true);
+    window.addEventListener("colaboradores:abrir-formulario", abrir);
+    return () => window.removeEventListener("colaboradores:abrir-formulario", abrir);
+  }, []);
   const [enviando, setEnviando] = useState(false);
   const [tokenGenerado, setTokenGenerado] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);

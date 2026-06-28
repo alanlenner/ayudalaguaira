@@ -1,5 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Search as SearchIcon, HandHeart, Brain, LifeBuoy, Network, Plus, AlertTriangle } from "lucide-react";
 import Footer from "./Footer";
 
@@ -12,10 +15,10 @@ const TABS: Array<{ key: Seccion; label: string; href: string; icon: ReactNode }
   { key: "red", label: "Red", href: "/red", icon: <Network className="w-4 h-4" /> },
 ];
 
-const CTA_CONFIG: Record<Seccion, { label: string; href: string; icon: ReactNode }> = {
-  desaparecidos: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
-  colaboradores: { label: "Colaborar", href: "/colaboradores", icon: <Plus className="w-5 h-5" /> },
-  ayuda: { label: "Colaborar", href: "/colaboradores", icon: <Plus className="w-5 h-5" /> },
+const CTA_CONFIG: Record<Seccion, { label: string; href: string; icon: ReactNode; event?: string }> = {
+  desaparecidos: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" />, event: "desaparecidos:abrir-formulario" },
+  colaboradores: { label: "Colaborar", href: "/colaboradores", icon: <Plus className="w-5 h-5" />, event: "colaboradores:abrir-formulario" },
+  ayuda: { label: "Colaborar", href: "/colaboradores?registro=1", icon: <Plus className="w-5 h-5" /> },
   red: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
 };
 
@@ -147,15 +150,21 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
             </Link>
           ))}
 
-          <Link
-            href={cta.href}
+          <button
+            onClick={() => {
+              if (cta.event) {
+                window.dispatchEvent(new CustomEvent(cta.event));
+              } else {
+                window.location.href = cta.href;
+              }
+            }}
             className="flex flex-col items-center gap-0.5 -mt-5"
           >
             <span className="w-14 h-14 rounded-full bg-white text-marca-azul border-2 border-marca-azul flex items-center justify-center shadow-lg shadow-marca-azul/20 ring-4 ring-white">
               {cta.icon}
             </span>
             <span className="text-[10px] font-semibold text-marca-azul">{cta.label}</span>
-          </Link>
+          </button>
 
           {rightTabs.map((tab) => (
             <Link
