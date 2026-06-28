@@ -10,6 +10,7 @@ export const TIPOS_AYUDA = [
   { value: "insumos_medicos", label: "Insumos médicos" },
   { value: "mano_obra", label: "Mano de obra / Limpieza" },
   { value: "donaciones", label: "Donaciones" },
+  { value: "mascotas", label: "Apoyo mascotas" },
   { value: "otro", label: "Otro" },
 ] as const;
 
