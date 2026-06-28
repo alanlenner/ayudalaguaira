@@ -710,6 +710,7 @@ export default function DesaparecidosSection({
 
   const cerrarFormulario = () => {
     setMostrarFormulario(false); setTokenGenerado(null); setNombre(""); setApellido(""); setCodigoPais("+58"); setTelefono(""); setTelefonoTocado(false); setUltimaUbicacion(""); setDescripcion(""); setEstado("buscando"); setFotoFile(null); setFotoPreview(null); setDuplicados([]); setContinuarConDuplicado(false); setCopiado(false); setBorradorPendiente(null);
+    actualizarFiltros({ reportar: null });
     onFormularioCerrado?.();
   };
 
@@ -1201,6 +1202,7 @@ export default function DesaparecidosSection({
             <button
               onClick={() => {
                 setMostrarConsentimiento(false);
+                actualizarFiltros({ reportar: null });
                 onFormularioCerrado?.();
               }}
               className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
@@ -1234,6 +1236,7 @@ export default function DesaparecidosSection({
               <button
                 onClick={() => {
                   setMostrarConsentimiento(false);
+                  actualizarFiltros({ reportar: null });
                   onFormularioCerrado?.();
                 }}
                 className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
