@@ -106,7 +106,7 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
                   className="hero-action-button flex-1 rounded-xl border border-white/30 bg-white font-medium text-slate-900 transition-all flex items-center justify-center gap-2 hover:bg-slate-50"
                 >
                   <HandHeart className="w-4 h-4" />
-                  Quiero ser voluntario
+                  Quiero ayudar
                 </Link>
                 <Link
                   href="/colaboradores"

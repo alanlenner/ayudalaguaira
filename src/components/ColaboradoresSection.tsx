@@ -80,24 +80,26 @@ function TarjetaColaborador({ col, onSelect }: { col: Colaborador; onSelect: (c:
   );
 }
 
-const TIPOS_CON_SOLICITUD = ["albergue", "alimentos", "transporte", "ropa_abrigo", "insumos_medicos", "mano_obra"];
+const TIPOS_CON_SOLICITUD = ["albergue", "transporte", "insumos_medicos", "mano_obra", "donaciones", "mascotas", "otro"];
 
 const PLACEHOLDER_DESC: Record<string, string> = {
   albergue: "Ej: Casa dañada, necesitamos donde quedarnos...",
-  alimentos: "Ej: Familia de 4, no tenemos acceso a comida...",
   transporte: "Ej: Necesito ir de Caraballeda a Caracas...",
-  ropa_abrigo: "Ej: Perdimos todo, necesitamos ropa para 3 niños...",
   insumos_medicos: "Ej: Necesito insulina, tensiómetro...",
   mano_obra: "Ej: Necesito ayuda para limpiar escombros...",
+  donaciones: "Ej: Familia de 4, necesitamos alimentos, ropa...",
+  mascotas: "Ej: Tengo 2 perros y no tengo donde dejarlos...",
+  otro: "Describe brevemente tu situación...",
 };
 
 const LABEL_SOLICITAR: Record<string, string> = {
   albergue: "Solicitar albergue",
-  alimentos: "Solicitar alimentos",
   transporte: "Solicitar transporte",
-  ropa_abrigo: "Solicitar ropa / abrigo",
   insumos_medicos: "Solicitar insumos médicos",
   mano_obra: "Solicitar mano de obra",
+  donaciones: "Solicitar donación",
+  mascotas: "Solicitar apoyo mascotas",
+  otro: "Solicitar ayuda",
 };
 
 function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: () => void }) {
@@ -330,7 +332,7 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
                 <label className="block text-xs font-medium text-slate-700 mb-1">Zona donde estás *</label>
                 <input type="text" value={solZona} onChange={(e) => setSolZona(e.target.value)} placeholder="Ej: Caraballeda, sector..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
               </div>
-              {(solTipo === "albergue" || solTipo === "alimentos" || solTipo === "ropa_abrigo") && (
+              {(solTipo === "albergue" || solTipo === "donaciones") && (
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad de personas</label>
                   <input type="number" value={solPersonas} onChange={(e) => setSolPersonas(e.target.value)} placeholder="Ej: 4" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
