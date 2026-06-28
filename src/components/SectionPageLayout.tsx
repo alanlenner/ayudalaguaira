@@ -106,14 +106,14 @@ export default function SectionPageLayout({ currentSection, children }: SectionP
                   className="hero-action-button flex-1 rounded-xl border border-white/30 bg-white font-medium text-slate-900 transition-all flex items-center justify-center gap-2 hover:bg-slate-50"
                 >
                   <HandHeart className="w-4 h-4" />
-                  Soy psicólogo y quiero ayudar
+                  Quiero ser voluntario
                 </Link>
                 <Link
                   href="/colaboradores"
                   className="hero-action-button flex-1 rounded-xl bg-marca-azul font-medium text-white transition-all flex items-center justify-center gap-2 hover:bg-marca-azul-oscuro"
                 >
                   <Heart className="w-4 h-4" />
-                  Necesito apoyo emocional
+                  Necesito ayuda
                 </Link>
               </div>
             </div>
