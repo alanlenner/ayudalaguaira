@@ -441,16 +441,31 @@ export default function ColaboradoresSection({
   const [formRedes, setFormRedes] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [contactoError, setContactoError] = useState("");
-  // Campos específicos albergue
+  // Campos específicos por categoría
   const [capacidad, setCapacidad] = useState("");
   const [aceptaMascotas, setAceptaMascotas] = useState(false);
   const [servicios, setServicios] = useState<string[]>([]);
   const [duracionEstadia, setDuracionEstadia] = useState("");
+  const [especificaOtro, setEspecificaOtro] = useState("");
+  const [quePuedesTransportar, setQuePuedesTransportar] = useState<string[]>([]);
+  const [metodoEntrega, setMetodoEntrega] = useState<string[]>([]);
+  const [cantidadAprox, setCantidadAprox] = useState("");
+  const [vigentes, setVigentes] = useState<string[]>([]);
+  const [zonaAlbergue, setZonaAlbergue] = useState("");
 
   const esAlbergue = tipoAyuda.includes("albergue");
 
   const toggleServicio = (s: string) => {
     setServicios((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
+  const toggleTransportar = (s: string) => {
+    setQuePuedesTransportar((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
+  const toggleEntrega = (s: string) => {
+    setMetodoEntrega((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+  };
+  const toggleVigentes = (s: string) => {
+    setVigentes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
   };
 
   const cargarConteos = useCallback(async () => {
@@ -540,14 +555,18 @@ export default function ColaboradoresSection({
     setEnviando(true);
     const edit_token = generarToken();
 
-    const tieneDatosExtra = servicios.length > 0 || capacidad.trim() || duracionEstadia.trim() || aceptaMascotas;
-
     const descParts: string[] = [];
     if (descripcion.trim()) descParts.push(descripcion.trim());
     if (capacidad.trim()) descParts.push(`Capacidad: ${capacidad.trim()}`);
+    if (cantidadAprox.trim()) descParts.push(`Cantidad: ${cantidadAprox.trim()}`);
     if (aceptaMascotas) descParts.push("Acepta mascotas");
     if (servicios.length > 0) descParts.push(`Servicios: ${servicios.join(", ")}`);
     if (duracionEstadia.trim()) descParts.push(`Estadía máx: ${duracionEstadia.trim()}`);
+    if (zonaAlbergue.trim()) descParts.push(`Zona albergue: ${zonaAlbergue.trim()}`);
+    if (especificaOtro.trim()) descParts.push(`Otro: ${especificaOtro.trim()}`);
+    if (quePuedesTransportar.length > 0) descParts.push(`Transporta: ${quePuedesTransportar.join(", ")}`);
+    if (metodoEntrega.length > 0) descParts.push(`Entrega: ${metodoEntrega.join(", ")}`);
+    if (vigentes.length > 0) descParts.push(`Vigentes: ${vigentes.join(", ")}`);
 
     const descFinal = descParts.length > 0 ? descParts.join(" | ") : null;
 
@@ -909,53 +928,80 @@ export default function ColaboradoresSection({
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
                     <p className="text-xs font-semibold text-blue-800">Datos del albergue</p>
                     <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Zona donde está ubicado <span className="text-red-500">*</span></label>
+                      <input type="text" value={zonaAlbergue} onChange={(e) => setZonaAlbergue(e.target.value)} placeholder="Ej: Caraballeda, Macuto..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                    <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">Capacidad (personas)</label>
-                      <input
-                        type="number"
-                        value={capacidad}
-                        onChange={(e) => setCapacidad(e.target.value)}
-                        placeholder="Ej: 4"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
-                      />
+                      <input type="number" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: 4" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">Duración máxima de estadía</label>
-                      <input
-                        type="text"
-                        value={duracionEstadia}
-                        onChange={(e) => setDuracionEstadia(e.target.value)}
-                        placeholder="Ej: 1 semana, 3 días, indefinido"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40"
-                      />
+                      <input type="text" value={duracionEstadia} onChange={(e) => setDuracionEstadia(e.target.value)} placeholder="Ej: 1 semana, 3 días, indefinido" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Servicios disponibles</label>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Servicios disponibles <span className="text-red-500">*</span></label>
+                      <p className="text-[10px] text-slate-400 mb-1">Selecciona una o más opciones</p>
                       <div className="flex flex-wrap gap-2">
-                        {["Agua", "Luz", "Internet", "Cocina", "Baño privado"].map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            onClick={() => toggleServicio(s)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-                              servicios.includes(s)
-                                ? "bg-marca-azul text-white"
-                                : "bg-white text-slate-600 border border-slate-200"
-                            }`}
-                          >
+                        {["Agua", "Luz", "Internet", "Cocina", "Baño", "Otro"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-marca-azul text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
                             {s}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="mascotas"
-                        checked={aceptaMascotas}
-                        onChange={(e) => setAceptaMascotas(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-marca-azul focus:ring-marca-azul/40"
-                      />
-                      <label htmlFor="mascotas" className="text-xs text-slate-700">Acepta mascotas</label>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Acepta mascotas?</label>
+                      <div className="flex gap-2">
+                        {["Sí", "No"].map((s) => (
+                          <button key={s} type="button" onClick={() => setAceptaMascotas(s === "Sí")}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                              (s === "Sí" && aceptaMascotas) || (s === "No" && !aceptaMascotas)
+                                ? "bg-marca-azul text-white"
+                                : "bg-white text-slate-600 border border-slate-200"
+                            }`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("donaciones") && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-amber-800">Sobre tu donación</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué donas? <span className="text-red-500">*</span></label>
+                      <p className="text-[10px] text-slate-400 mb-1">Selecciona una o más opciones</p>
+                      <div className="flex flex-wrap gap-2">
+                        {["Comida preparada", "Alimentos", "Agua", "Fórmula infantil", "Ropa / abrigo", "Productos de higiene", "Útiles escolares", "Otro"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-amber-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cuántas raciones aproximadamente?</label>
+                      <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: 20 raciones, para 10 personas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad aproximada</label>
+                      <input type="text" value={cantidadAprox} onChange={(e) => setCantidadAprox(e.target.value)} placeholder="Ej: 20 cajas de agua, 10 abrigos" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cómo prefieres entregarla?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Punto de entrega", "Yo la llevo", "Que la recojan"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleEntrega(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${metodoEntrega.includes(s) ? "bg-amber-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -985,19 +1031,38 @@ export default function ColaboradoresSection({
                   <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-3">
                     <p className="text-xs font-semibold text-purple-800">Sobre el transporte</p>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Tipo de vehículo</label>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Tipo de vehículo <span className="text-red-500">*</span></label>
+                      <p className="text-[10px] text-slate-400 mb-1">Selecciona una o más opciones</p>
                       <div className="flex flex-wrap gap-2">
-                        {["Carro particular", "Camioneta", "Camión", "Moto"].map((s) => (
+                        {["Carro particular", "Camioneta", "Camión", "Moto", "Autobús / buseta", "Otro"].map((s) => (
                           <button key={s} type="button" onClick={() => toggleServicio(s)}
                             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
                             {s}
                           </button>
                         ))}
                       </div>
+                      {servicios.includes("Otro") && (
+                        <input type="text" value={especificaOtro} onChange={(e) => setEspecificaOtro(e.target.value)} placeholder="Especifica: ej. lancha, autobús, buseta..." className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué puedes transportar?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Personas", "Carga / suministros", "Ambos"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleTransportar(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${quePuedesTransportar.includes(s) ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Capacidad aproximada</label>
+                      <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: 4 personas, o 200kg de carga" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">Zona de cobertura</label>
-                      <input type="text" value={duracionEstadia} onChange={(e) => setDuracionEstadia(e.target.value)} placeholder="Ej: Vargas - Caracas, solo dentro de Vargas..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                      <input type="text" value={duracionEstadia} onChange={(e) => setDuracionEstadia(e.target.value)} placeholder="Ej: Vargas - Caracas, solo dentro de Vargas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
                     </div>
                   </div>
                 )}
@@ -1023,11 +1088,41 @@ export default function ColaboradoresSection({
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
                     <p className="text-xs font-semibold text-red-800">Sobre los insumos médicos</p>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué insumos ofreces?</label>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué insumos ofreces? <span className="text-red-500">*</span></label>
+                      <p className="text-[10px] text-slate-400 mb-1">Selecciona una o más opciones</p>
                       <div className="flex flex-wrap gap-2">
-                        {["Medicamentos", "Primeros auxilios", "Equipos médicos", "Material de curación"].map((s) => (
+                        {["Medicamentos", "Equipos médicos", "Material de curación", "Otro"].map((s) => (
                           <button key={s} type="button" onClick={() => toggleServicio(s)}
                             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                      {servicios.includes("Otro") && (
+                        <input type="text" value={especificaOtro} onChange={(e) => setEspecificaOtro(e.target.value)} placeholder="Especifica: ej. suero, oxígeno, sillas de rueda" className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad aproximada</label>
+                      <input type="text" value={cantidadAprox} onChange={(e) => setCantidadAprox(e.target.value)} placeholder="Ej: 20 unidades, 1 caja grande" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Están vigentes y sin abrir?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Sí, todos", "Algunos no"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleVigentes(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${vigentes.includes(s) ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cómo prefieres entregarlos?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Punto de entrega", "Yo lo llevo", "Que lo recojan"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleEntrega(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${metodoEntrega.includes(s) ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
                             {s}
                           </button>
                         ))}
