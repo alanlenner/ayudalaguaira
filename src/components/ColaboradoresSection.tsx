@@ -528,22 +528,16 @@ export default function ColaboradoresSection({
     setEnviando(true);
     const edit_token = generarToken();
 
-    const metaAlbergue = esAlbergue ? {
-      capacidad: capacidad.trim() || null,
-      acepta_mascotas: aceptaMascotas,
-      servicios: servicios.length > 0 ? servicios : null,
-      duracion_estadia: duracionEstadia.trim() || null,
-    } : null;
+    const tieneDatosExtra = servicios.length > 0 || capacidad.trim() || duracionEstadia.trim() || aceptaMascotas;
 
-    const descFinal = esAlbergue
-      ? [
-          descripcion.trim(),
-          capacidad.trim() ? `Capacidad: ${capacidad.trim()} personas` : "",
-          aceptaMascotas ? "Acepta mascotas" : "",
-          servicios.length > 0 ? `Servicios: ${servicios.join(", ")}` : "",
-          duracionEstadia.trim() ? `Estadía máx: ${duracionEstadia.trim()}` : "",
-        ].filter(Boolean).join(" | ")
-      : descripcion.trim() || null;
+    const descParts: string[] = [];
+    if (descripcion.trim()) descParts.push(descripcion.trim());
+    if (capacidad.trim()) descParts.push(`Capacidad: ${capacidad.trim()}`);
+    if (aceptaMascotas) descParts.push("Acepta mascotas");
+    if (servicios.length > 0) descParts.push(`Servicios: ${servicios.join(", ")}`);
+    if (duracionEstadia.trim()) descParts.push(`Estadía máx: ${duracionEstadia.trim()}`);
+
+    const descFinal = descParts.length > 0 ? descParts.join(" | ") : null;
 
     const { error } = await supabase.from("colaboradores").insert({
       nombre: nombre.trim(),
@@ -949,6 +943,103 @@ export default function ColaboradoresSection({
                   </div>
                 )}
 
+                {tipoAyuda.includes("alimentos") && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-green-800">Sobre los alimentos</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué ofreces?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Comida preparada", "Despensa", "Agua potable", "Fórmula infantil"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Cantidad aproximada (raciones/personas)</label>
+                      <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: 20 raciones, para 10 personas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("transporte") && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-purple-800">Sobre el transporte</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Tipo de vehículo</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Carro particular", "Camioneta", "Camión", "Moto"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Zona de cobertura</label>
+                      <input type="text" value={duracionEstadia} onChange={(e) => setDuracionEstadia(e.target.value)} placeholder="Ej: Vargas - Caracas, solo dentro de Vargas..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("ropa_abrigo") && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-orange-800">Sobre la ropa / abrigo</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tienes disponible?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Ropa adultos", "Ropa niños", "Cobijas", "Zapatos", "Ropa de bebé"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-orange-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("insumos_medicos") && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-red-800">Sobre los insumos médicos</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué insumos ofreces?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Medicamentos", "Primeros auxilios", "Equipos médicos", "Material de curación"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {tipoAyuda.includes("mano_obra") && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-semibold text-amber-800">Sobre la mano de obra</p>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Qué tipo de trabajo puedes hacer?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Limpieza de escombros", "Construcción", "Electricidad", "Plomería", "Carga y descarga"].map((s) => (
+                          <button key={s} type="button" onClick={() => toggleServicio(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${servicios.includes(s) ? "bg-amber-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">¿Cuántas personas puedes llevar?</label>
+                      <input type="text" value={capacidad} onChange={(e) => setCapacidad(e.target.value)} placeholder="Ej: solo yo, equipo de 5 personas" className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40" />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Descripción
@@ -956,7 +1047,7 @@ export default function ColaboradoresSection({
                   <textarea
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder={esAlbergue ? "Detalles adicionales del espacio..." : "Cómo puedes ayudar, experiencia relevante..."}
+                    placeholder={esAlbergue ? "Detalles adicionales del espacio..." : "Detalles adicionales, experiencia, horarios..."}
                     rows={2}
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-azul/40 resize-none"
                   />
