@@ -165,7 +165,47 @@ function ModalDetalleColaborador({ col, onClose }: { col: Colaborador; onClose: 
           {col.disponibilidad && (
             <p className="text-sm text-slate-600"><strong>Disponibilidad:</strong> {col.disponibilidad}</p>
           )}
-          {col.descripcion && (
+          {esAlbergueCol && col.descripcion ? (() => {
+            const partes = col.descripcion.split(" | ");
+            const capacidad = partes.find(p => p.startsWith("Capacidad:"))?.replace("Capacidad: ", "") || null;
+            const mascotas = partes.some(p => p === "Acepta mascotas");
+            const serviciosStr = partes.find(p => p.startsWith("Servicios:"))?.replace("Servicios: ", "") || null;
+            const estadia = partes.find(p => p.startsWith("Estadía máx:"))?.replace("Estadía máx: ", "") || null;
+            const textoLibre = partes.filter(p => !p.startsWith("Capacidad:") && !p.startsWith("Servicios:") && !p.startsWith("Estadía máx:") && p !== "Acepta mascotas").join(" ");
+            return (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 space-y-2">
+                <p className="text-xs font-semibold text-blue-800">Detalles del albergue</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
+                  {capacidad && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">👥</span>
+                      <span><strong>{capacidad}</strong></span>
+                    </div>
+                  )}
+                  {estadia && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">📅</span>
+                      <span>Máx: <strong>{estadia}</strong></span>
+                    </div>
+                  )}
+                  {mascotas && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">🐾</span>
+                      <span>Acepta mascotas</span>
+                    </div>
+                  )}
+                </div>
+                {serviciosStr && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {serviciosStr.split(", ").map((s) => (
+                      <span key={s} className="px-2 py-0.5 bg-white border border-blue-200 rounded-full text-[10px] font-medium text-blue-700">{s}</span>
+                    ))}
+                  </div>
+                )}
+                {textoLibre && <p className="text-xs text-slate-600 pt-1">{textoLibre}</p>}
+              </div>
+            );
+          })() : col.descripcion && (
             <p className="text-sm text-slate-600">{col.descripcion}</p>
           )}
 
