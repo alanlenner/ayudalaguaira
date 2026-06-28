@@ -5,12 +5,11 @@ export const TIPOS_AYUDA = [
   { value: "salud_mental", label: "Salud mental / Psicología" },
   { value: "albergue", label: "Albergue / Habitación temporal" },
   { value: "alimentos", label: "Alimentos / Agua" },
-  { value: "transporte", label: "Transporte" },
+  { value: "transporte", label: "Transporte / Logística" },
   { value: "ropa_abrigo", label: "Ropa / Abrigo" },
   { value: "insumos_medicos", label: "Insumos médicos" },
   { value: "mano_obra", label: "Mano de obra / Limpieza" },
-  { value: "donaciones", label: "Donaciones / Recaudación" },
-  { value: "logistica", label: "Logística / Distribución" },
+  { value: "donaciones", label: "Donaciones" },
   { value: "otro", label: "Otro" },
 ] as const;
 
