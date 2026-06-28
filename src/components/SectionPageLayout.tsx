@@ -14,8 +14,8 @@ const TABS: Array<{ key: Seccion; label: string; href: string; icon: ReactNode }
 
 const CTA_CONFIG: Record<Seccion, { label: string; href: string; icon: ReactNode }> = {
   desaparecidos: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
-  colaboradores: { label: "Colaborar", href: "/colaboradores?registro=1", icon: <Plus className="w-5 h-5" /> },
-  ayuda: { label: "Colaborar", href: "/colaboradores?registro=1", icon: <Plus className="w-5 h-5" /> },
+  colaboradores: { label: "Colaborar", href: "/colaboradores", icon: <Plus className="w-5 h-5" /> },
+  ayuda: { label: "Colaborar", href: "/colaboradores", icon: <Plus className="w-5 h-5" /> },
   red: { label: "Reportar", href: "/desaparecidos?reportar=1", icon: <AlertTriangle className="w-5 h-5" /> },
 };
 
