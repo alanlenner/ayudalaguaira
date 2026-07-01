@@ -33,11 +33,6 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="border-t border-slate-200 pt-4">
-          <p className="text-xs text-slate-400 text-center">
-            Si eres voluntario y sientes que estás en riesgo, contacta a organizaciones de derechos humanos.
-          </p>
-        </div>
       </div>
     </div>
   );
